@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: divar
+  datasource:
+    url: jdbc:postgresql://192.168.114.233:5432/realstate
+    username: myuser
+    password: mypass
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: divar
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+

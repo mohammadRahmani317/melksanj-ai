@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>نمودار قیمت</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+</head>
+<body>
+<div id="container" style="width:100%; height:400px;"></div>
+
+<script>
+    async function drawChart() {
+        const response = await fetch("http://localhost:8080/rest/reale/state/chart/image/isfahan");
+        const data = await response.json();
+
+        const years = Object.keys(data);
+        const prices = Object.values(data).map(p => p / 1_000_000_000); // تبدیل به میلیارد
+
+        Highcharts.chart('container', {
+            chart: {
+                type: 'line',
+                style: { direction: 'rtl', fontFamily: 'Tahoma' }
+            },
+            title: {
+                text: 'میانگین قیمت خانه‌ها در تهران'
+            },
+            xAxis: {
+                categories: years,
+                title: { text: 'سال' }
+            },
+            yAxis: {
+                title: { text: 'قیمت (میلیارد تومان)' },
+                min: 0
+            },
+            series: [{
+                name: 'تهران',
+                data: prices
+            }]
+        });
+    }
+
+    drawChart();
+</script>
+</body>
+</html>
