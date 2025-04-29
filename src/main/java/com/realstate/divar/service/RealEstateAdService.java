@@ -2,35 +2,15 @@ package com.realstate.divar.service;
 
 import com.realstate.divar.model.RealEstateAd;
 import com.realstate.divar.repository.RealEstateAdRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -229,7 +209,7 @@ public class RealEstateAdService {
             for (int i = 0; i < 5; i++) {
                 RealEstateAd ad = new RealEstateAd();
                 ad.setPriceValue(50000000L + (long) (Math.random() * 100000000)); // قیمت رندوم
-                ad.setCreatedAtMonth(LocalDate.of(year, (int)(Math.random() * 12) + 1, 1).atStartOfDay()); // یک ماه تصادفی
+                ad.setCreatedAtMonth(LocalDate.of(year, (int) (Math.random() * 12) + 1, 1).atStartOfDay()); // یک ماه تصادفی
 
                 ads.add(ad);
             }
