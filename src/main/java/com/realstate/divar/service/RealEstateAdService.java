@@ -205,9 +205,10 @@ public class RealEstateAdService {
         }
     }
 
-    public Map<String, Double> generatePriceTrendChart(String citySlug) throws IOException {
-
-        List<RealEstateAd> ads = realEstateAdRepository.findByCitySlugAndPriceValueIsNotNull(citySlug);
+    public Map<String, Double> generatePriceTrendChart(String citySlug) {
+        //todo uncomment this after corrected database and all thing in your server
+//        List<RealEstateAd> ads = realEstateAdRepository.findByCitySlugAndPriceValueIsNotNull(citySlug);
+        List<RealEstateAd> ads = generateMockAds();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy");
 
@@ -218,5 +219,22 @@ public class RealEstateAdService {
                         TreeMap::new,
                         Collectors.averagingLong(RealEstateAd::getPriceValue)
                 ));
+    }
+
+    public static List<RealEstateAd> generateMockAds() {
+        List<RealEstateAd> ads = new ArrayList<>();
+
+        // مثلا برای ۵ سال گذشته، هر سال ۵ تا آگهی درست کنیم
+        for (int year = 2020; year <= 2024; year++) {
+            for (int i = 0; i < 5; i++) {
+                RealEstateAd ad = new RealEstateAd();
+                ad.setPriceValue(50000000L + (long) (Math.random() * 100000000)); // قیمت رندوم
+                ad.setCreatedAtMonth(LocalDate.of(year, (int)(Math.random() * 12) + 1, 1).atStartOfDay()); // یک ماه تصادفی
+
+                ads.add(ad);
+            }
+        }
+
+        return ads;
     }
 }

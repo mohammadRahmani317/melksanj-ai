@@ -54,12 +54,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jfreechart</artifactId>
-            <version>1.5.4</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
@@ -70,6 +64,7 @@
             <artifactId>postgresql</artifactId>
             <version>42.7.5</version>
         </dependency>
+
     </dependencies>
 
     <build>
