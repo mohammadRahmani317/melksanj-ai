@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>نمودار قیمت املاک</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+</head>
+<body class="bg-gray-50 p-6 font-sans">
+
+<div class="max-w-3xl mx-auto bg-white rounded-2xl shadow p-6">
+    <h1 class="text-2xl font-bold mb-6 text-center">نمودار تغییرات قیمت املاک</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+            <label class="block mb-1 font-medium">شهر</label>
+            <select id="citySelect" class="w-full border p-2 rounded"></select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium">نوع آگهی</label>
+            <select id="groupSelect" class="w-full border p-2 rounded">
+                <option value="">همه</option>
+            </select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium">نوع ملک</label>
+            <select id="categorySelect" class="w-full border p-2 rounded">
+                <option value="">همه</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="loadChart()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded mb-4 w-full">نمایش نمودار</button>
+
+    <canvas id="priceChart" height="120"></canvas>
+</div>
+
+<script>
+    let chart;
+
+    async function fetchData() {
+        const [cities, groups, categories] = await Promise.all([
+            fetch('http://localhost:8080/rest/reale/state/cities').then(res => res.json()),
+            fetch('http://localhost:8080/rest/reale/state/groups').then(res => res.json()),
+            fetch('http://localhost:8080/rest/reale/state/categories').then(res => res.json())
+        ]);
+
+        fillSelect(document.getElementById("citySelect"), cities, "id", "name");
+        fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true);
+        fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
+    }
+
+    function fillSelect(select, data, valueKey, textKey, addAllOption = false) {
+        select.innerHTML = "";
+        if (addAllOption) {
+            const allOption = document.createElement("option");
+            allOption.value = "";
+            allOption.textContent = "همه";
+            select.appendChild(allOption);
+        }
+
+        data.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item[valueKey];
+            opt.textContent = item[textKey];
+            select.appendChild(opt);
+        });
+    }
+
+    async function loadChart() {
+        const cityId = document.getElementById("citySelect").value;
+        const groupCode = document.getElementById("groupSelect").value;
+        const categoryCode = document.getElementById("categorySelect").value;
+
+        if (!cityId) {
+            alert("لطفاً یک شهر انتخاب کنید");
+            return;
+        }
+
+        let url = `http://localhost:8080/rest/reale/state/chart?cityId=${cityId}`;
+        if (groupCode) url += `&groupCode=${groupCode}`;
+        if (categoryCode) url += `&categoryCode=${categoryCode}`;
+
+        try {
+            const data = await fetch(url).then(res => res.json());
+
+            // میلادی → شمسی
+            const labels = Object.keys(data).map(gYear => {
+                const jYear = window.jalaali.toJalaali(Number(gYear), 1, 1).jy;
+                return jYear.toString();
+            });
+
+            const values = Object.values(data).map(Number);
+
+            if (chart) chart.destroy();
+
+            const ctx = document.getElementById("priceChart").getContext("2d");
+            chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "میانگین قیمت (میلیارد تومان)",
+                        data: values,
+                        borderColor: "#3b82f6",
+                        backgroundColor: "rgba(59,130,246,0.2)",
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: "قیمت به میلیارد تومان"
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: "سال شمسی"
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.raw} میلیارد تومان`
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (e) {
+            alert("خطا در بارگذاری نمودار");
+            console.error(e);
+        }
+    }
+
+    window.onload = fetchData;
+</script>
+
+</body>
+</html>
