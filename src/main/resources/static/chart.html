@@ -85,12 +85,7 @@
         try {
             const data = await fetch(url).then(res => res.json());
 
-            // میلادی → شمسی
-            const labels = Object.keys(data).map(gYear => {
-                const jYear = window.jalaali.toJalaali(Number(gYear), 1, 1).jy;
-                return jYear.toString();
-            });
-
+            const labels = Object.keys(data);
             const values = Object.values(data).map(Number);
 
             if (chart) chart.destroy();
