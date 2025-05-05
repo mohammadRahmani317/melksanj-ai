@@ -1,8 +1,8 @@
 package com.realstate.divar.service;
 
 import com.github.mfathi91.time.PersianDate;
-import com.realstate.divar.common.AdGroupTypeValue;
 import com.realstate.divar.common.AdCategoryTypeValue;
+import com.realstate.divar.common.AdGroupTypeValue;
 import com.realstate.divar.dto.AdCategoryDTO;
 import com.realstate.divar.dto.AdGroupDTO;
 import com.realstate.divar.model.*;
@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,8 @@ public class RealEstateAdService {
                     log.warn("⛔️ خطا در پارس رکورد شماره {} - پیام: {}", recordIndex, e.getMessage());
                 }
                 recordIndex++;
+                if (count == 500L)
+                    break;
             }
 
             if (!batch.isEmpty()) {
@@ -196,14 +199,30 @@ public class RealEstateAdService {
         return r.isMapped(name) && !r.get(name).isEmpty() ? Boolean.parseBoolean(r.get(name)) : null;
     }
 
-    private LocalDateTime convertToLocalDateTime(String value) {
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy H:mm");
-            return LocalDate.parse(value, formatter).atStartOfDay();
-        } catch (Exception e) {
-            return null;
+    public static LocalDateTime convertToLocalDateTime(String value) {
+        List<DateTimeFormatter> formatters = List.of(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"),
+                DateTimeFormatter.ofPattern("M/d/yyyy H:mm"),
+                DateTimeFormatter.ofPattern("M/d/yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"), // fallback for date-only
+                DateTimeFormatter.ofPattern("yyyy/MM/dd")  // fallback for date-only
+        );
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDateTime.parse(value, formatter);
+            } catch (DateTimeParseException e1) {
+                try {
+                    // Try parse as LocalDate if LocalDateTime fails
+                    return LocalDate.parse(value, formatter).atStartOfDay();
+                } catch (DateTimeParseException ignored) {
+                }
+            }
         }
+        return null; // or throw a custom exception if needed
     }
+
 
     public Map<String, String> getCharPerYear(Long cityId, String groupCode, String categoryCode) {
 
