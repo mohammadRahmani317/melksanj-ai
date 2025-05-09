@@ -227,7 +227,7 @@ public class RealEstateAdService {
     public Map<String, String> getCharPerYear(Long cityId, String groupCode, String categoryCode) {
 
         List<RealEstateAd> ads = realEstateAdRepository.findByCityAndAdGroupAndAdCategoryAndPriceValueIsNotNull(cityId, groupCode, categoryCode);
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        DecimalFormat decimalFormat = new DecimalFormat("#");
 
         return ads.stream()
                 .collect(Collectors.groupingBy(
