@@ -10,20 +10,21 @@
 <!-- Header -->
 <header class="bg-white shadow sticky top-0 z-10">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-gray-800">سامانه تحلیل املاک دیوار</h1>
+        <h1 class="text-xl font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
         <nav class="space-x-2 space-x-reverse">
             <a href="index.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">خانه</a>
             <a href="charts.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">نمودارهای
                 تحلیلی</a>
-            <a href="predict.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">تخمین قیمت</a>
+            <a href="predict.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">تخمین قیمت ملک با هوش مصنوعی</a>
         </nav>
     </div>
 </header>
 
 <body class="bg-gradient-to-b from-blue-100 to-blue-50 min-h-screen font-sans pb-20">
 
+<h2 class="text-center text-xl font-bold text-gray-700 mt-6 mb-2">نمودار تغییرات سالانه قیمت املاک</h2>
+
 <div class="max-w-3xl mx-auto mt-4 bg-white p-4 rounded-2xl shadow text-sm leading-tight">
-    <h4 class="text-2xl font-bold mb-6 text-center">نمودار تغییرات قیمت املاک</h4>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" dir="rtl">
         <div>
@@ -104,13 +105,13 @@
             const labels = Object.keys(data);
             const values = Object.values(data).map(Number);
 
-            // محاسبه کمترین و بیشترین مقدار
-            const minValue = Math.min(...values);
             const maxValue = Math.max(...values);
+            let yMax = Math.ceil(maxValue / 10) * 10;
 
-            // کم و زیاد کردن محدوده
-            const minY = Math.max(0, Math.floor(minValue) - 2); // حداقل ۰
-            const maxY = Math.ceil(maxValue) + 2;
+            // اگر مقادیر از 40 کمتر بود، تا 40 ادامه پیدا کنه
+            if (yMax < 40) {
+                yMax = 40;
+            }
 
             if (chart) chart.destroy();
 
@@ -133,15 +134,13 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            min: minY,
-                            maxY: maxY,
+                            min: 0,
+                            max: yMax,
                             ticks: {
-                                callback: function (value, index, values) {
-                                    // از بین بردن اعشار با استفاده از Math.round و فرمت هزارگان
-                                    return new Intl.NumberFormat('fa-IR').format(Math.round(value)) + ' میلیارد';
-                                },
-
-                                stepSize: 1,
+                                stepSize: 10,
+                                callback: function (value) {
+                                    return new Intl.NumberFormat('fa-IR').format(value) + ' میلیارد';
+                                }
                             },
                             title: {
                                 display: true,
@@ -169,6 +168,7 @@
             console.error(e);
         }
     }
+
 
     window.onload = fetchData;
 </script>
