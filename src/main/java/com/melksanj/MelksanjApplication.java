@@ -1,13 +1,13 @@
-package com.realstate.divar;
+package com.melksanj;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DivarApplication {
+public class MelksanjApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DivarApplication.class, args);
+        SpringApplication.run(MelksanjApplication.class, args);
     }
 
 }

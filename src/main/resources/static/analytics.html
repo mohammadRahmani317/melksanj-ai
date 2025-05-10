@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>نمودارهای تحلیلی - سامانه تحلیل قیمت املاک</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-b from-blue-100 to-blue-50 min-h-screen font-sans flex flex-col" dir="rtl">
+
+<header class="bg-white shadow">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <nav class="space-x-2 space-x-reverse">
+            <a href="index.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">خانه</a>
+            <a href="analytics.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">نمودارهای تحلیلی</a>
+            <a href="predict.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">تخمین قیمت ملک با هوش مصنوعی</a>
+        </nav>
+        <h1 class="text-xl font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
+    </div>
+</header>
+
+
+<!-- Main content -->
+<main class="flex-grow flex items-start justify-start px-4 pt-10">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl ml-auto pr-4 sm:pr-8">
+        <a href="chart-price-yearly.html" class="block bg-white shadow-md rounded-xl p-6 hover:bg-blue-50 transition text-right">
+            <h2 class="text-xl font-bold text-blue-700">نمودار تغییرات قیمت/سال</h2>
+            <p class="text-gray-500 mt-2 text-sm">تحلیل تغییرات قیمت بر اساس سال</p>
+        </a>
+
+        <a href="chart-region-distribution.html" class="block bg-white shadow-md rounded-xl p-6 hover:bg-blue-50 transition text-right">
+            <h2 class="text-xl font-bold text-green-700">🏘️ تعداد آگهی / منطقه</h2>
+            <p class="text-gray-500 mt-2 text-sm">تحلیل تعداد آگهی‌ها بر اساس مناطق</p>
+        </a>
+    </div>
+</main>
+
+<!-- Footer (مثل index.html) -->
+<footer class="bg-gray-800 text-white py-4 mt-10 w-full text-center" style="position: fixed; bottom: 0; left: 0;">
+    <div class="max-w-6xl mx-auto">
+        <p class="text-sm">
+            داده‌های این سایت بر اساس آگهی‌های املاک منتشر شده در دیوار است. تمامی حقوق مربوط به این داده‌ها متعلق به دیوار است.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

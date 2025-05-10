@@ -1,6 +1,6 @@
 spring:
   application:
-    name: divar
+    name: melksanj-ai
   datasource:
     url: jdbc:postgresql://metro.proxy.rlwy.net:36748/railway?sslmode=require
     username: postgres
@@ -13,5 +13,8 @@ spring:
   sql:
     init:
       mode: always
+  h2:
+    console:
+      enabled: true
 
 

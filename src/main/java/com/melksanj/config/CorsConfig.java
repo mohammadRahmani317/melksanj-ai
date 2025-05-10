@@ -1,4 +1,4 @@
-package com.realstate.divar.config;
+package com.melksanj.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
