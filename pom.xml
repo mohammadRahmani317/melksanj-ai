@@ -8,11 +8,11 @@
         <version>3.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.realstate</groupId>
-    <artifactId>divar</artifactId>
+    <groupId>com.melksanj</groupId>
+    <artifactId>melksanj-ai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>divar</name>
-    <description>divar</description>
+    <name>MelkSanj AI</name>
+    <description>سامانه هوشمند تحلیل و پیش‌بینی قیمت املاک با استفاده از داده‌های آگهی‌های دیوار</description>
     <url/>
     <licenses>
         <license/>
