@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "ad_group")
 public class AdGroup {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,9 +21,4 @@ public class AdGroup {
 
     @Column(length = 255)
     private String title;
-
-    public AdGroup(String code) {
-        this.code = code;
-    }
-
 }

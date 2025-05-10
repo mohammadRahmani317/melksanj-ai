@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "ad_category")
 public class AdCategory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,12 +22,7 @@ public class AdCategory {
     @Column(length = 255)
     private String title;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private AdGroup group;
-
-    public AdCategory(String code) {
-        this.code = code;
-    }
 }
-
