@@ -2,9 +2,9 @@ spring:
   application:
     name: melksanj-ai
   datasource:
-    url: jdbc:postgresql://metro.proxy.rlwy.net:36748/railway?sslmode=require
+    url: jdbc:postgresql://switchyard.proxy.rlwy.net:28893/railway
     username: postgres
-    password: NHQPQrJQIONSsOoGIKfzVQaKsggjwPfC
+    password: BrgmUziKvYVUrlawBgVjZCtATwdhPDAe
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
