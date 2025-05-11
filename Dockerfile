@@ -13,6 +13,8 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline
 # Copy the rest of the project
 COPY . ./
 
+RUN chmod +x mvnw
+
 # Build the application
 RUN ./mvnw clean package -DskipTests
 
