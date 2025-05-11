@@ -1,9 +1,11 @@
 services:
   - type: web
     name: melksanj-ai-backend
-    env: java
-    buildCommand: "./mvnw clean install"
-    startCommand: "java -jar target/*.jar"
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile
+    autoDeploy: true
     envVars:
       - key: PORT
         value: 8080
