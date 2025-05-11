@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: melksanj-ai-backend
+    env: java
+    buildCommand: "./mvnw clean install"
+    startCommand: "java -jar target/*.jar"
+    envVars:
+      - key: PORT
+        value: 8080
