@@ -14,6 +14,10 @@ public class Neighborhood {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String nameFa;
+    private Integer region;
+
     @ManyToOne
     private City city;
+
 }

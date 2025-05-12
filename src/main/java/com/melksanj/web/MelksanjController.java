@@ -1,5 +1,6 @@
 package com.melksanj.web;
 
+import com.melksanj.config.OpenAIService;
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
 import com.melksanj.model.City;
@@ -16,6 +17,7 @@ import java.util.Map;
 public class MelksanjController {
 
     private final MelksanjService melksanjService;
+    private final OpenAIService openAIService;
 
     /**
      * Import real estate ads data from CSV file into the database.
@@ -68,5 +70,10 @@ public class MelksanjController {
     @GetMapping("/meta/categories")
     public List<AdCategoryDTO> fetchAllAdCategories() {
         return melksanjService.fetchAllAdCategories();
+    }
+
+    @GetMapping("/translate")
+    public String translate(@RequestParam String cityName) {
+        return openAIService.getNeighborhoodInfo(cityName);
     }
 }

@@ -64,7 +64,7 @@
             fetch('http://localhost:8080/api/melksanj/meta/categories').then(res => res.json())
         ]);
 
-        fillSelect(document.getElementById("citySelect"), cities, "id", "name");
+        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa");
         fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true);
         fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
     }
