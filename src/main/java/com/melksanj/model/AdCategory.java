@@ -23,9 +23,5 @@ public class AdCategory {
     @ManyToOne
     @JoinColumn(name = "group_id")
     private AdGroup group;
-
-    public AdCategory(String code) {
-        this.code = code;
-    }
 }
 

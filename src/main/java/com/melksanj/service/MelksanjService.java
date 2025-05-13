@@ -1,10 +1,7 @@
 package com.melksanj.service;
 
 import com.github.mfathi91.time.PersianDate;
-import com.melksanj.constants.AdCategoryEnum;
-import com.melksanj.constants.AdGroupEnum;
-import com.melksanj.constants.CityEnum;
-import com.melksanj.constants.NeighborhoodEnum;
+import com.melksanj.constants.*;
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
 import com.melksanj.model.*;
@@ -187,9 +184,13 @@ public class MelksanjService {
                 .orElseGet(() -> {
                     Neighborhood n = new Neighborhood();
                     n.setName(slug);
-                    n.setNameFa(NeighborhoodEnum.getPersonaNameByName(slug));
-                    n.setRegion(NeighborhoodEnum.getNeighborhoodByCity(slug, city.getNameFa()));
+
+                    Optional<NeighborhoodInfo> infoOpt = NeighborhoodEnumHandler.findNeighborhood(slug, city.getNameFa());
+
+                    n.setNameFa(infoOpt.map(NeighborhoodInfo::getNameFa).orElse("نامشخص"));
+                    n.setRegion(infoOpt.map(NeighborhoodInfo::getRegion).orElse(0));
                     n.setCity(city);
+
                     return neighborhoodRepository.save(n);
                 });
     }
