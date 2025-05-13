@@ -7,7 +7,7 @@ import com.melksanj.model.City;
 import com.melksanj.service.MelksanjService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +49,8 @@ public class MelksanjController {
      */
     @GetMapping("/meta/cities")
     public List<City> fetchAllCities() {
-        return melksanjService.fetchAllCities();
+        return Arrays.asList(new City(1L,"Tehran","تهران"));
+        // return melksanjService.fetchAllCities();
     }
 
     /**
