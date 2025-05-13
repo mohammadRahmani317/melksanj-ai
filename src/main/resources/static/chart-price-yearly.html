@@ -119,23 +119,23 @@
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
 
-        if (!cityId) {
-            alert("لطفاً یک شهر انتخاب کنید");
-            return;
-        }
+        // if (!cityId) {
+        //     alert("لطفاً یک شهر انتخاب کنید");
+        //     return;
+        // }
 
         const selectedSaleRent = document.querySelector('input[name="saleRent"]:checked');
 
-        if (!selectedSaleRent) {
-            alert("لطفاً یکی از گزینه‌های فروش یا اجاره را انتخاب کنید");
-            return;
-        }
+        // if (!selectedSaleRent) {
+        //     alert("لطفاً یکی از گزینه‌های فروش یا اجاره را انتخاب کنید");
+        //     return;
+        // }
 
         const isSale = selectedSaleRent.value === 'sale';
-        let url = `http://localhost:8080/api/melksanj/price/yearly?cityId=${cityId}&isSell=${isSale}`;
+        // let url = `http://localhost:8080/api/melksanj/price/yearly?cityId=${cityId}&isSell=${isSale}`;
 
-        if (groupCode) url += `&groupCode=${groupCode}`;
-        if (categoryCode) url += `&categoryCode=${categoryCode}`;
+        // if (groupCode) url += `&groupCode=${groupCode}`;
+        // if (categoryCode) url += `&categoryCode=${categoryCode}`;
 
         try {
             // const data = await fetch(url).then(r => r.json());
