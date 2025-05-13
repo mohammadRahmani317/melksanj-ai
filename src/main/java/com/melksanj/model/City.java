@@ -15,4 +15,6 @@ public class City {
     private Long id;
     @Column(length = 255)
     private String name;
+    @Column(length = 255)
+    private String nameFa;
 }

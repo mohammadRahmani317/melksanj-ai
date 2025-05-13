@@ -1,11 +1,11 @@
-package com.melksanj.common;
+package com.melksanj.constants;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 //cat2Slug
 @Getter
 @RequiredArgsConstructor
-public enum AdGroupTypeValue {
+public enum AdGroupEnum {
     COMMERCIAL_RENT("commercial-rent", "تجاری برای اجاره"),
     COMMERCIAL_SELL("commercial-sell", "تجاری برای فروش"),
     REAL_ESTATE_SERVICES("real-estate-services", "خدمات ملکی"),
@@ -17,8 +17,8 @@ public enum AdGroupTypeValue {
     private final String title;
 
 
-    public static AdGroupTypeValue fromCode(String code) {
-        for (AdGroupTypeValue category : values()) {
+    public static AdGroupEnum fromCode(String code) {
+        for (AdGroupEnum category : values()) {
             if (category.code.equals(code)) {
                 return category;
             }

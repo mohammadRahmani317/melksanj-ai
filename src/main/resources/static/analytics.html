@@ -4,44 +4,90 @@
     <meta charset="UTF-8">
     <title>نمودارهای تحلیلی - سامانه تحلیل قیمت املاک</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Vazir", "IRANSans", "Tahoma", sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-b from-blue-100 to-blue-50 min-h-screen font-sans flex flex-col" dir="rtl">
+<body class="bg-gray-50 min-h-screen font-sans flex flex-col">
 
-<header class="bg-white shadow">
+<!-- Header -->
+<header class="bg-white shadow-sm">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
         <nav class="space-x-2 space-x-reverse">
-            <a href="index.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">خانه</a>
-            <a href="analytics.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">نمودارهای تحلیلی</a>
-            <a href="predict.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">تخمین قیمت ملک با هوش مصنوعی</a>
+            <a href="index.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">خانه</a>
+            <a href="analytics.html" class="text-blue-700 border-b-2 border-blue-700 px-4 py-2 font-semibold">نمودارهای تحلیلی</a>
+            <a href="predict.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">تخمین قیمت</a>
         </nav>
-        <h1 class="text-xl font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
+        <h1 class="text-lg font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
     </div>
 </header>
 
+<!-- Main Content -->
+<main class="flex-grow px-4 pt-10" dir="rtl">
+    <div class="max-w-5xl mx-auto">
 
-<!-- Main content -->
-<main class="flex-grow flex items-start justify-start px-4 pt-10">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl ml-auto pr-4 sm:pr-8">
-        <a href="chart-price-yearly.html" class="block bg-white shadow-md rounded-xl p-6 hover:bg-blue-50 transition text-right">
-            <h2 class="text-xl font-bold text-blue-700">نمودار تغییرات قیمت/سال</h2>
-            <p class="text-gray-500 mt-2 text-sm">تحلیل تغییرات قیمت بر اساس سال</p>
-        </a>
+        <!-- Tabs -->
+        <div class="border-b border-gray-300 mb-6">
+            <nav class="flex space-x-6 space-x-reverse text-sm font-medium">
+                <button onclick="showTab('priceTab')" class="tab-btn border-b-2 py-2 px-3 text-gray-600 hover:text-blue-600">قیمت</button>
+                <button onclick="showTab('regionTab')" class="tab-btn border-b-2 py-2 px-3 text-gray-600 hover:text-blue-600">منطقه‌ای</button>
+                <button onclick="showTab('typeTab')" class="tab-btn border-b-2 py-2 px-3 text-gray-600 hover:text-blue-600">نوع ملک</button>
+            </nav>
+        </div>
 
-        <a href="chart-region-distribution.html" class="block bg-white shadow-md rounded-xl p-6 hover:bg-blue-50 transition text-right">
-            <h2 class="text-xl font-bold text-green-700">🏘️ تعداد آگهی / منطقه</h2>
-            <p class="text-gray-500 mt-2 text-sm">تحلیل تعداد آگهی‌ها بر اساس مناطق</p>
-        </a>
+        <!-- Tab Content -->
+        <div id="priceTab" class="tab-content">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="chart-price-yearly.html" class="block bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                    <h3 class="text-gray-800 font-semibold text-lg mb-2">نمودار تغییرات قیمت بر اساس سال</h3>
+                    <p class="text-sm text-gray-500">بررسی روند قیمت در طول زمان</p>
+                </a>
+            </div>
+        </div>
+
+        <div id="regionTab" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="chart-region-distribution.html" class="block bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                    <h3 class="text-gray-800 font-semibold text-lg mb-2">توزیع آگهی بر اساس مناطق</h3>
+                    <p class="text-sm text-gray-500">مقایسه تعداد آگهی‌ها در مناطق مختلف</p>
+                </a>
+            </div>
+        </div>
+
+        <div id="typeTab" class="tab-content hidden">
+            <div class="text-gray-500">نمودارهای مربوط به نوع ملک در حال توسعه هستند.</div>
+        </div>
+
     </div>
 </main>
 
-<!-- Footer (مثل index.html) -->
-<footer class="bg-gray-800 text-white py-4 mt-10 w-full text-center" style="position: fixed; bottom: 0; left: 0;">
-    <div class="max-w-6xl mx-auto">
-        <p class="text-sm">
-            داده‌های این سایت بر اساس آگهی‌های املاک منتشر شده در دیوار است. تمامی حقوق مربوط به این داده‌ها متعلق به دیوار است.
-        </p>
-    </div>
+<!-- Footer -->
+<footer class="bg-white border-t border-gray-200 text-center py-4 text-sm text-gray-500 mt-10">
+    .داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند
 </footer>
+
+<!-- JS for Tab Logic -->
+<script>
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('text-blue-600', 'border-blue-600');
+            btn.classList.add('text-gray-600', 'border-transparent');
+        });
+
+        const active = Array.from(document.querySelectorAll('.tab-btn'))
+            .find(btn => btn.getAttribute('onclick').includes(tabId));
+        active.classList.remove('text-gray-600', 'border-transparent');
+        active.classList.add('text-blue-600', 'border-blue-600');
+    }
+
+    // پیش‌فرض نمایش اولین تب
+    showTab('priceTab');
+</script>
 
 </body>
 </html>

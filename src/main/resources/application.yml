@@ -16,4 +16,7 @@ spring:
   h2:
     console:
       enabled: true
+openai:
+  api:
+    key: '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'
 

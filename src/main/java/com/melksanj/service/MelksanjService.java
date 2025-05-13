@@ -1,8 +1,7 @@
 package com.melksanj.service;
 
 import com.github.mfathi91.time.PersianDate;
-import com.melksanj.common.AdCategoryTypeValue;
-import com.melksanj.common.AdGroupTypeValue;
+import com.melksanj.constants.*;
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
 import com.melksanj.model.*;
@@ -153,34 +152,54 @@ public class MelksanjService {
     private AdGroup getOrCreateGroup(String slug) {
         return groupCache.computeIfAbsent(slug, code ->
                 adGroupRepository.findByCode(code)
-                        .orElseGet(() -> adGroupRepository.save(new AdGroup(null, code, AdGroupTypeValue.fromCode(code).getTitle())))
+                        .orElseGet(() -> adGroupRepository.save(new AdGroup(null, code, AdGroupEnum.fromCode(code).getTitle())))
         );
     }
 
     private AdCategory getOrCreateCategory(String slug, AdGroup group) {
         return categoryCache.computeIfAbsent(slug, code ->
                 adCategoryRepository.findByCode(code)
-                        .orElseGet(() -> adCategoryRepository.save(new AdCategory(null, code, AdCategoryTypeValue.fromCode(code).getTitle(), group)))
+                        .orElseGet(() -> adCategoryRepository.save(new AdCategory(null, code, AdCategoryEnum.fromCode(code).getTitle(), group)))
         );
     }
 
     private City fetchOrCreateCity(String name) {
         return cityRepository.findByName(name)
-                .orElseGet(() -> cityRepository.save(new City(null, name)));
+                .orElseGet(() -> {
+                    String nameFa = findCityFaBySlug(name);
+                    return cityRepository.save(new City(null, name, nameFa));
+                });
     }
 
-    private Neighborhood fetchOrCreateNeighborhood(String name, City city) {
-        if (name != null && city != null) {
-            return neighborhoodRepository.findByNameAndCity(name, city)
-                    .orElseGet(() -> neighborhoodRepository.save(new Neighborhood(null, name, city)));
+    private String findCityFaBySlug(String slug) {
+        try {
+            return CityEnum.valueOf(slug.toUpperCase().replace("-", "_")).getNameFa();
+        } catch (IllegalArgumentException e) {
+            return "نامشخص";
         }
-        return null;
+    }
+
+    private Neighborhood fetchOrCreateNeighborhood(String slug, City city) {
+        return neighborhoodRepository.findByNameAndCity(slug, city)
+                .orElseGet(() -> {
+                    Neighborhood n = new Neighborhood();
+                    n.setName(slug);
+
+                    Optional<NeighborhoodInfo> infoOpt = NeighborhoodEnumHandler.findNeighborhood(slug, city.getNameFa());
+
+                    n.setNameFa(infoOpt.map(NeighborhoodInfo::getNameFa).orElse("نامشخص"));
+                    n.setRegion(infoOpt.map(NeighborhoodInfo::getRegion).orElse(0));
+                    n.setCity(city);
+
+                    return neighborhoodRepository.save(n);
+                });
     }
 
     private void setField(Runnable setter) {
         try {
             setter.run();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private String getString(CSVRecord r, String name) {
@@ -215,7 +234,8 @@ public class MelksanjService {
             } catch (DateTimeParseException e1) {
                 try {
                     return LocalDate.parse(value, formatter).atStartOfDay();
-                } catch (DateTimeParseException ignored) {}
+                } catch (DateTimeParseException ignored) {
+                }
             }
         }
         return null;

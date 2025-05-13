@@ -1,4 +1,4 @@
-package com.melksanj.common;
+package com.melksanj.constants;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 // cat3Slug
 @Getter
 @RequiredArgsConstructor
-public enum AdCategoryTypeValue {
+public enum AdCategoryEnum {
     APARTMENT_RENT("apartment-rent", "آپارتمان اجاره‌ای"),
     APARTMENT_SELL("apartment-sell", "آپارتمان فروشی"),
     HOUSE_VILLA_RENT("house-villa-rent", "خانه/ویلا اجاره‌ای"),
@@ -27,8 +27,8 @@ public enum AdCategoryTypeValue {
     private final String code;
     private final String title;
 
-    public static AdCategoryTypeValue fromCode(String code) {
-        for (AdCategoryTypeValue category : values()) {
+    public static AdCategoryEnum fromCode(String code) {
+        for (AdCategoryEnum category : values()) {
             if (category.code.equals(code)) {
                 return category;
             }
