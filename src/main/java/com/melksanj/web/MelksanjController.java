@@ -22,7 +22,7 @@ public class MelksanjController {
     /**
      * Import real estate ads data from CSV file into the database.
      */
-    @PostMapping("/data/import")
+    @GetMapping("/data/import")
     public void importCsvData() {
         melksanjService.importCsvData();
     }
