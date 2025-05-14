@@ -85,21 +85,24 @@ public class MelksanjService {
     }
 
     public List<AdGroupDTO> fetchAllAdGroups() {
-        return adGroupRepository.findAll()
-                .stream()
-                .map(adGroup -> new AdGroupDTO(adGroup.getCode(), adGroup.getTitle()))
+        return Arrays.stream(AdDisplayGroupEnum.values())
+                .map(adDisplayGroupEnum -> new AdGroupDTO(adDisplayGroupEnum.getCode(), adDisplayGroupEnum.getTitle()))
                 .toList();
     }
 
     public List<AdCategoryDTO> fetchAllAdCategories() {
-        return adCategoryRepository.findAll()
-                .stream()
-                .map(adCategory -> new AdCategoryDTO(adCategory.getCode(), adCategory.getTitle()))
+        return Arrays.stream(AdDisplayCategoryEnum.values())
+                .map(adDisplayCategoryEnum -> new AdCategoryDTO(adDisplayCategoryEnum.getCode(), adDisplayCategoryEnum.getTitle()))
                 .toList();
+
     }
 
-    public Map<String, String> getYearlyAveragePrices(Long cityId, String groupCode, String categoryCode) {
-        List<RealEstateAd> ads = realEstateAdRepository.findByCityAndAdGroupAndAdCategoryAndPriceValueIsNotNull(cityId, groupCode, categoryCode);
+    public Map<String, String> getYearlyAveragePrices(Long cityId, String groupCode, String categoryCode, boolean isSale) {
+
+        AdGroupEnum adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSale);
+        AdCategoryEnum adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSale);
+
+        List<RealEstateAd> ads = realEstateAdRepository.findByCityAndAdGroupAndAdCategoryAndPriceValueIsNotNull(cityId, adGroupEnum.getCode(), adCategoryEnum.getCode());
         DecimalFormat df = new DecimalFormat("#");
 
         return ads.stream()

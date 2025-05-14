@@ -3,6 +3,8 @@ package com.melksanj.constants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+
 // cat3Slug
 @Getter
 @RequiredArgsConstructor
@@ -35,4 +37,29 @@ public enum AdCategoryEnum {
         }
         throw new IllegalArgumentException("Invalid PropertyCategory code: " + code);
     }
+
+    public static AdCategoryEnum fromCodeAndIsSell(String code, boolean isSell) {
+
+        AdCategoryEnum adGroupEnum = Arrays.stream(values())
+                .filter(f -> f.code.equals(code))
+                .findFirst()
+                .orElse(null);
+
+
+        if (adGroupEnum == null) {
+            String finalCode = concatIsSell(code, isSell);
+            adGroupEnum = Arrays.stream(values())
+                    .filter(f -> f.code.equals(finalCode))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid AdGroupEnum code: " + finalCode));
+        }
+
+        return adGroupEnum;
+    }
+
+    private static String concatIsSell(String codeParam, boolean isSell) {
+        if (isSell) return codeParam + "-sell";
+        else return codeParam + "-rent";
+    }
+
 }

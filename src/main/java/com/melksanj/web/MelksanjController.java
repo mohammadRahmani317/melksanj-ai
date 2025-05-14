@@ -38,8 +38,9 @@ public class MelksanjController {
     @GetMapping("/price/yearly")
     public Map<String, String> getYearlyAveragePrices(@RequestParam Long cityId,
                                                       @RequestParam(required = false) String groupCode,
-                                                      @RequestParam(required = false) String categoryCode) {
-        return melksanjService.getYearlyAveragePrices(cityId, groupCode, categoryCode);
+                                                      @RequestParam(required = false) String categoryCode,
+                                                      @RequestParam boolean isSale) {
+        return melksanjService.getYearlyAveragePrices(cityId, groupCode, categoryCode,isSale);
     }
 
     /**
@@ -49,8 +50,7 @@ public class MelksanjController {
      */
     @GetMapping("/meta/cities")
     public List<City> fetchAllCities() {
-        return Arrays.asList(new City(1L,"Tehran","تهران"));
-        // return melksanjService.fetchAllCities();
+         return melksanjService.fetchAllCities();
     }
 
     /**
