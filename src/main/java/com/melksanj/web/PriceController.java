@@ -32,7 +32,7 @@ public class PriceController {
         return melksanjService.getYearlyAveragePrices(cityId, groupCode, categoryCode, isSell);
     }
 
-    @GetMapping("/mounthly")
+    @GetMapping("/monthly")
     public Map<String, String> getYearlyAveragePrices(@RequestParam Long cityId,
                                                       @RequestParam Integer year,
                                                       @RequestParam(required = false) String groupCode,

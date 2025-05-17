@@ -2,6 +2,7 @@ package com.melksanj.web;
 
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
+import com.melksanj.dto.YearDto;
 import com.melksanj.model.City;
 import com.melksanj.service.MelksanjService;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +50,8 @@ public class BaseController {
     }
 
 
-    @GetMapping("/years")
-    public List<Integer> getAvailableYears() {
+    @GetMapping("/meta/years")
+    public List<YearDto> getAvailableYears() {
         return melksanjService.findDistinctYears();
     }
 }

@@ -4,6 +4,7 @@ import com.github.mfathi91.time.PersianDate;
 import com.melksanj.constants.*;
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
+import com.melksanj.dto.YearDto;
 import com.melksanj.model.*;
 import com.melksanj.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -100,13 +101,13 @@ public class MelksanjService {
 
     public Map<String, String> getYearlyAveragePrices(Long cityId, String groupCode, String categoryCode, boolean isSale) {
 
-        AdGroupEnum adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSale);
-        AdCategoryEnum adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSale);
+        List<String> adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSale);
+        List<String> adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSale);
 
-        List<Object[]> results = realEstateAdRepository.findYearlyAveragePrice(
+        List<Object[]> results = realEstateAdRepository.findAveragePricePerYear(
                 cityId,
-                adGroupEnum != null ? adGroupEnum.getCode() : null,
-                adCategoryEnum != null ? adCategoryEnum.getCode() : null
+                adGroupEnum,
+                adCategoryEnum
         );
 
         return results.stream()
@@ -127,15 +128,15 @@ public class MelksanjService {
                 ));
     }
 
-    public Map<String, String> getAveragePriceByMonthAndYear(Long cityId, String groupCode, String categoryCode, Integer year,boolean isSell) {
+    public Map<String, String> getAveragePriceByMonthAndYear(Long cityId, String groupCode, String categoryCode, Integer year, boolean isSell) {
 
-        AdGroupEnum adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSell);
-        AdCategoryEnum adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSell);
+        List<String> adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSell);
+        List<String> adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSell);
 
         List<Object[]> results = realEstateAdRepository.findAveragePriceByMonthAndYear(
                 cityId,
-                groupCode,
-                categoryCode,
+                adGroupEnum,
+                adCategoryEnum,
                 year
         );
 
@@ -160,8 +161,19 @@ public class MelksanjService {
         Double avgPrice = (Double) row[1];
         return decimalFormat.format(avgPrice / 1_000_000_000.0);
     }
-    public List<Integer> findDistinctYears() {
-        return realEstateAdRepository.findDistinctYears();
+
+    public List<YearDto> findDistinctYears() {
+
+        List<Integer> years = realEstateAdRepository.findDistinctYears();
+        return years.stream()
+                .map(year -> {
+                    // تبدیل سال میلادی به اولین روز از اون سال
+                    LocalDate gregorianDate = LocalDate.of(year, 1, 1);
+                    // تبدیل به شمسی
+                    com.github.mfathi91.time.PersianDate persianDate = com.github.mfathi91.time.PersianDate.fromGregorian(gregorianDate);
+                    return new YearDto(year, String.valueOf(persianDate.getYear()));
+                })
+                .collect(Collectors.toList());
     }
 
     private RealEstateAd mapRecordToEntity(CSVRecord r) {

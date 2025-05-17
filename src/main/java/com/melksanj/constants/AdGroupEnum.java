@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.sql.ast.tree.from.StandardTableGroup;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 //cat2Slug
@@ -31,8 +33,18 @@ public enum AdGroupEnum {
         throw new IllegalArgumentException("Invalid AdCategory code: " + code);
     }
 
-    public static AdGroupEnum fromCodeAndIsSell(String code, boolean isSell) {
-        if (code == null) return null;
+    public static List<String> fromCodeAndIsSell(String code, boolean isSell) {
+        if (code == null) {
+            return Arrays.stream(values())
+                    .map(AdGroupEnum::getCode)
+                    .filter(c -> {
+                        if (isSell) {
+                            return c.endsWith("-sell");
+                        } else {
+                            return c.endsWith("-rent");
+                        }
+                    }).toList();
+        }
         AdGroupEnum adGroupEnum = Arrays.stream(values())
                 .filter(f -> f.code.equals(code))
                 .findAny()
@@ -47,7 +59,7 @@ public enum AdGroupEnum {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid AdGroupEnum code: " + finalCode));
         }
 
-        return adGroupEnum;
+        return Collections.singletonList(adGroupEnum.getCode());
     }
 
     private static String concatIsSell(String codeParam, boolean isSell) {

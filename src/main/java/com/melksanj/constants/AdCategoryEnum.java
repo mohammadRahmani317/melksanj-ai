@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 // cat3Slug
 @Getter
@@ -38,8 +40,18 @@ public enum AdCategoryEnum {
         throw new IllegalArgumentException("Invalid PropertyCategory code: " + code);
     }
 
-    public static AdCategoryEnum fromCodeAndIsSell(String code, boolean isSell) {
-        if (code == null) return null;
+    public static List<String> fromCodeAndIsSell(String code, boolean isSell) {
+        if (code == null) {
+            return Arrays.stream(values())
+                    .map(AdCategoryEnum::getCode)
+                    .filter(c -> {
+                        if (isSell) {
+                            return c.endsWith("-sell");
+                        } else {
+                            return c.endsWith("-rent");
+                        }
+                    }).toList();
+        }
         AdCategoryEnum adGroupEnum = Arrays.stream(values())
                 .filter(f -> f.code.equals(code))
                 .findFirst()
@@ -54,7 +66,7 @@ public enum AdCategoryEnum {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid AdGroupEnum code: " + finalCode));
         }
 
-        return adGroupEnum;
+        return Collections.singletonList(adGroupEnum.getCode());
     }
 
     private static String concatIsSell(String codeParam, boolean isSell) {

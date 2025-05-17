@@ -38,24 +38,19 @@
                     <label class="block text-sm mb-1">شهر</label>
                     <select id="citySelect" class="w-full p-2 border rounded mb-4"></select>
                 </div>
-                <div class="mb-4 flex items-center space-x-4">
-                    <label class="flex items-center space-x-2">
+                <div class="mb-4 flex items-center space-x-4 space-x-reverse">
+                    <label class="flex items-center space-x-2 space-x-reverse">
                         <input type="radio" name="saleRent" value="sale" class="form-radio text-blue-600"/>
                         <span>فروش</span>
                     </label>
-                    <label class="flex items-center space-x-2">
+                    <label class="flex items-center space-x-2 space-x-reverse">
                         <input type="radio" name="saleRent" value="rent" class="form-radio text-blue-600"/>
                         <span>اجاره</span>
                     </label>
                 </div>
                 <div>
                     <label class="block text-sm mb-1">سال</label>
-                    <select id="yearSelect" class="w-full p-2 border rounded">
-                        <option value="1400">1400</option>
-                        <option value="1401">1401</option>
-                        <option value="1402">1402</option>
-                        <option value="1403">1403</option>
-                    </select>
+                    <select id="yearSelect" class="w-full p-2 border rounded"></select>
                 </div>
             </div>
 
@@ -86,14 +81,21 @@
 
 <script>
     async function fetchData() {
-        const [cities, groups, categories] = await Promise.all([
-            fetch('http://localhost:8080/api/melksanj/meta/cities').then(r => r.json()),
-            fetch('http://localhost:8080/api/melksanj/meta/groups').then(r => r.json()),
-            fetch('http://localhost:8080/api/melksanj/meta/categories').then(r => r.json())
-        ]);
-        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa");
-        fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true);
-        fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
+        try {
+            const [cities, groups, categories, years] = await Promise.all([
+                fetch('http://localhost:8080/api/melksanj/meta/cities').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/meta/groups').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/meta/categories').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/meta/years').then(r => r.json())
+            ]);
+
+            fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa");
+            fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true);
+            fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
+            fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
+        } catch (error) {
+            alert("خطا در بارگذاری داده‌ها: " + error.message);
+        }
     }
 
     function fillSelect(select, data, valueKey, textKey, addAll = false) {
@@ -125,7 +127,7 @@
         }
 
         const isSell = selectedSaleRent.value === 'sale';
-        let url = `http://localhost:8080/api/melksanj/price/mounthly?cityId=${cityId}&year=${year}&isSell=${isSell}`;
+        let url = `http://localhost:8080/api/melksanj/price/monthly?cityId=${cityId}&year=${year}&isSell=${isSell}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
 
@@ -134,8 +136,29 @@
             if (!response.ok) throw new Error("خطا در دریافت داده‌ها از سرور");
             const data = await response.json();
 
-            // داده‌های دریافتی احتمالا به صورت { "فروردین": "10.2", "اردیبهشت": "10.7", ... } هستند
+            // نگاشت شماره ماه به نام ماه فارسی
+            const persianMonths = {
+                "1": "فروردین",
+                "2": "اردیبهشت",
+                "3": "خرداد",
+                "4": "تیر",
+                "5": "مرداد",
+                "6": "شهریور",
+                "7": "مهر",
+                "8": "آبان",
+                "9": "آذر",
+                "10": "دی",
+                "11": "بهمن",
+                "12": "اسفند"
+            };
+
             const months = Object.keys(data);
+            const persianMonthNames = months.map(m => {
+                const parts = m.split('/');
+                const monthNum = parts[1];
+                return persianMonths[monthNum] || m;
+            });
+
             const values = Object.values(data).map(v => parseFloat(v));
 
             Highcharts.chart('priceChart', {
@@ -147,7 +170,7 @@
                     text: `میانگین قیمت هر متر مربع در ماه‌های سال ${year}`
                 },
                 xAxis: {
-                    categories: months,
+                    categories: persianMonthNames,
                     title: { text: 'ماه' }
                 },
                 yAxis: {
@@ -164,15 +187,15 @@
                 }],
                 credits: { enabled: false }
             });
+
         } catch (err) {
             console.error(err);
             alert("خطا در دریافت داده‌ها: " + err.message);
         }
     }
 
+
     window.onload = fetchData;
 </script>
-
-
 </body>
 </html>
