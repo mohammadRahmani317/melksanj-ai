@@ -32,10 +32,10 @@ public enum AdGroupEnum {
     }
 
     public static AdGroupEnum fromCodeAndIsSell(String code, boolean isSell) {
-
+        if (code == null) return null;
         AdGroupEnum adGroupEnum = Arrays.stream(values())
                 .filter(f -> f.code.equals(code))
-                .findFirst()
+                .findAny()
                 .orElse(null);
 
 

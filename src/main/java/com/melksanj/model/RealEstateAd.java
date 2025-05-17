@@ -52,6 +52,7 @@ public class RealEstateAd {
     private Double landSize;
     private Double buildingSize;
 
+    // no setter
     private String deedType;
     private Boolean hasBusinessDeed;
 
@@ -93,6 +94,7 @@ public class RealEstateAd {
     private Long rentPriceOnRegularDays;
     private Long rentPriceOnSpecialDays;
     private Long rentPriceAtWeekends;
+    // no setter
 
     private Double locationLatitude;
     private Double locationLongitude;

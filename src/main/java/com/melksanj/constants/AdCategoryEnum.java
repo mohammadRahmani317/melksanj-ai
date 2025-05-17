@@ -39,7 +39,7 @@ public enum AdCategoryEnum {
     }
 
     public static AdCategoryEnum fromCodeAndIsSell(String code, boolean isSell) {
-
+        if (code == null) return null;
         AdCategoryEnum adGroupEnum = Arrays.stream(values())
                 .filter(f -> f.code.equals(code))
                 .findFirst()

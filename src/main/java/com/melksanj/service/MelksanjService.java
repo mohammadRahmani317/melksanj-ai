@@ -37,6 +37,7 @@ public class MelksanjService {
 
     private final Map<String, AdGroup> groupCache = new HashMap<>();
     private final Map<String, AdCategory> categoryCache = new HashMap<>();
+    private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
     @Transactional
     public void importCsvData() {
@@ -102,18 +103,65 @@ public class MelksanjService {
         AdGroupEnum adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSale);
         AdCategoryEnum adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSale);
 
-        List<RealEstateAd> ads = realEstateAdRepository.findByCityAndAdGroupAndAdCategoryAndPriceValueIsNotNull(cityId, adGroupEnum.getCode(), adCategoryEnum.getCode());
-        DecimalFormat df = new DecimalFormat("#");
+        List<Object[]> results = realEstateAdRepository.findYearlyAveragePrice(
+                cityId,
+                adGroupEnum != null ? adGroupEnum.getCode() : null,
+                adCategoryEnum != null ? adCategoryEnum.getCode() : null
+        );
 
-        return ads.stream()
-                .collect(Collectors.groupingBy(
-                        ad -> String.valueOf(PersianDate.fromGregorian(ad.getCreatedAtMonth().toLocalDate()).getYear()),
-                        TreeMap::new,
-                        Collectors.collectingAndThen(
-                                Collectors.averagingLong(RealEstateAd::getPriceValue),
-                                avg -> df.format(avg / 1_000_000_000.0)
-                        )
+        return results.stream()
+                .collect(Collectors.toMap(
+                        row -> {
+                            Integer yearGregorian = (Integer) row[0];
+                            // تبدیل به LocalDate ابتدای سال میلادی (مثلاً 1 فروردین معادل 1 ژانویه)
+                            LocalDate gregorianDate = LocalDate.of(yearGregorian, 1, 1);
+                            PersianDate persianDate = PersianDate.fromGregorian(gregorianDate);
+                            return String.valueOf(persianDate.getYear());
+                        },
+                        row -> {
+                            Double avgPrice = (Double) row[1];
+                            return decimalFormat.format(avgPrice / 1_000_000_000.0);
+                        },
+                        (v1, v2) -> v1,
+                        TreeMap::new
                 ));
+    }
+
+    public Map<String, String> getAveragePriceByMonthAndYear(Long cityId, String groupCode, String categoryCode, Integer year,boolean isSell) {
+
+        AdGroupEnum adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSell);
+        AdCategoryEnum adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSell);
+
+        List<Object[]> results = realEstateAdRepository.findAveragePriceByMonthAndYear(
+                cityId,
+                groupCode,
+                categoryCode,
+                year
+        );
+
+        return results.stream()
+                .collect(Collectors.toMap(
+                        row -> extractKey(row, year),
+                        this::extractValue,
+                        (v1, v2) -> v1,
+                        TreeMap::new
+                ));
+    }
+
+
+    private String extractKey(Object[] row, int year) {
+        Integer monthGregorian = (Integer) row[0];
+        LocalDate gregorianDate = LocalDate.of(year, monthGregorian, 1);
+        PersianDate persianDate = PersianDate.fromGregorian(gregorianDate);
+        return persianDate.getYear() + "/" + persianDate.getMonthValue();
+    }
+
+    private String extractValue(Object[] row) {
+        Double avgPrice = (Double) row[1];
+        return decimalFormat.format(avgPrice / 1_000_000_000.0);
+    }
+    public List<Integer> findDistinctYears() {
+        return realEstateAdRepository.findDistinctYears();
     }
 
     private RealEstateAd mapRecordToEntity(CSVRecord r) {
@@ -125,6 +173,7 @@ public class MelksanjService {
         setField(() -> ad.setCity(fetchOrCreateCity(r.get("city_slug"))));
         setField(() -> ad.setNeighborhood(fetchOrCreateNeighborhood(r.get("neighborhood_slug"), ad.getCity())));
         setField(() -> ad.setCreatedAtMonth(parseDateTime(getString(r, "created_at_month"))));
+        setField(() -> ad.setConstructionYear(getInteger(r, "construction_year")));
 
         setField(() -> ad.setUserType(getString(r, "user_type")));
         setField(() -> ad.setDescription(getString(r, "description")));
@@ -203,6 +252,10 @@ public class MelksanjService {
             setter.run();
         } catch (Exception ignored) {
         }
+    }
+
+    private Integer getInteger(CSVRecord r, String name) {
+        return r.isMapped(name) && !r.get(name).isEmpty() ? Integer.valueOf(r.get(name)) : null;
     }
 
     private String getString(CSVRecord r, String name) {
