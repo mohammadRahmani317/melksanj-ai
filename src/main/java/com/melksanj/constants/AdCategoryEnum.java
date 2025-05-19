@@ -46,7 +46,7 @@ public enum AdCategoryEnum {
                     .map(AdCategoryEnum::getCode)
                     .filter(c -> {
                         if (isSell) {
-                            return c.endsWith("-sell");
+                            return !c.endsWith("-rent") ;
                         } else {
                             return c.endsWith("-rent");
                         }

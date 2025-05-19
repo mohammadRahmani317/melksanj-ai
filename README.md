@@ -1,75 +1,92 @@
-# MelkSanj AI
+# 🏠 MelkSanj AI
 
-سامانه‌ای هوشمند برای تحلیل و تخمین قیمت املاک بر اساس آگهی‌های منتشر شده در دیوار.
+**MelkSanj AI** is an intelligent platform for analyzing and estimating real estate prices based on ads published on [Divar](https://divar.ir/).  
+This project uses Spring Boot and modern frontend tools to deliver a clean, interactive experience.
 
-## 📊 ویژگی‌ها
+---
 
-* نمایش نمودار تغییرات میانگین قیمت املاک به تفکیک سال
-* فیلتر بر اساس شهر، نوع آگهی، و نوع ملک
-* CSV بارگذاری داده‌های آگهی از فایل
-* تخمین قیمت ملک با استفاده از مدل هوش مصنوعی (در حال توسعه)
-* رابط کاربری ساده و زیبا با Chart.js و Tailwind CSS
+## 📊 Features
 
-## 🚀 راه‌اندازی پروژه
+- 📈 Yearly price trend charts (avg. price per square meter)
+- 🎯 Filtering by city, property type, and category
+- 📂 Importing real estate ads from CSV files
+- 🤖 AI-powered price prediction (under development)
+- 🖥️ Clean and responsive UI with Chart.js & Tailwind CSS
 
-### پیش‌نیازها
+---
 
-* Java 17 یا بالاتر
-* Maven
-* (اختیاری) Postgres یا H2 Database
+## 🚀 Getting Started
 
-### اجرای پروژه
+### Prerequisites
+
+- Java 17+
+- Maven
+- (Optional) PostgreSQL or H2 for database
+
+### Run the application
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-سپس مرورگر را باز کرده و به آدرس زیر بروید:
+Then open your browser and navigate to:
 
 ```
 http://localhost:8080
 ```
 
-## 🔗 REST API Endpointها
+---
 
-| متد  | مسیر                                    | توضیح                             |
-| ---- | --------------------------------------- |-----------------------------------|
-| POST | `/api/melksanj/data/import`             | csv بارگذاری داده‌ها از فایل      |
-| GET  | `/api/melksanj/price/yearly?cityId=...` | دریافت میانگین قیمت به تفکیک سال  |
-| GET  | `/api/melksanj/meta/cities`             | لیست شهرها                        |
-| GET  | `/api/melksanj/meta/groups`             | لیست نوع آگهی‌ها                  |
-| GET  | `/api/melksanj/meta/categories`         | لیست دسته‌بندی املاک              |
+## 🔌 REST API Endpoints
 
-## 🧰 تکنولوژی‌های استفاده شده
-
-* Spring Boot
-* Java 17
-* Chart.js
-* Tailwind CSS
-* CSVParser (Apache Commons)
-* Persian Date Library
-
-## 📂 ساختار پروژه (خلاصه)
-
-```text
-src/main/java/com/melksanj
-├── service         ← منطق بارگذاری و تحلیل داده‌ها
-├── web             ← کنترلرهای REST API
-├── model           ← مدل‌های داده‌ای (Entity)
-├── repository      ← ارتباط با دیتابیس
-
-src/main/resources/static
-├── index.html      ← صفحه اصلی
-├── charts.html     ← نمودارها
-├── predict.html    ← تخمین قیمت
-```
-
-## ✨ توسعه در آینده
-
-* ML مدل پیش‌بینی قیمت با استفاده از مدل‌های 
-* اضافه کردن نمودارهای مقایسه‌ای بین شهرها
-* صفحه ادمین برای مدیریت و مشاهده دیتا
+| Method | Endpoint                                  | Description                            |
+|--------|-------------------------------------------|----------------------------------------|
+| POST   | `/api/melksanj/data/import`              | Import real estate ads from CSV        |
+| GET    | `/api/melksanj/price/sale/yearly`        | Yearly average prices (by filters)     |
+| GET    | `/api/melksanj/price/sale/monthly`       | Monthly avg. prices for selected year  |
+| GET    | `/api/melksanj/meta/cities`              | List of available cities               |
+| GET    | `/api/melksanj/meta/groups`              | List of property groups                |
+| GET    | `/api/melksanj/meta/categories`          | List of property categories            |
+| GET    | `/api/melksanj/meta/years`               | Available years based on data          |
 
 ---
 
-© 2025 MelkSanj AI – توسعه داده شده توسط محمد رحمانی
+## 🧰 Tech Stack
+
+- **Backend:** Spring Boot (Java 17)
+- **Frontend:** HTML + Tailwind CSS + Chart.js
+- **Data Processing:** Apache Commons CSV
+- **Date Handling:** Persian Date library
+- **Database:** PostgreSQL / H2 (switchable)
+
+---
+
+## 📁 Project Structure (Simplified)
+
+```
+src/main/java/com/melksanj
+├── service         # Business logic and data analysis
+├── web             # REST controllers
+├── model           # JPA entities and DTOs
+├── repository      # Spring Data JPA repositories
+
+src/main/resources/static
+├── index.html          # Landing page
+├── analytics.html      # Price charts
+├── predict.html        # AI price prediction (WIP)
+```
+
+---
+
+## 📈 Planned Features
+
+- Price prediction using ML models (regression & transformer-based)
+- Comparative charts between multiple cities
+- Admin dashboard for managing and monitoring listings
+
+---
+
+## 👨‍💻 Author
+
+Developed by **Mohammad Rahmani** – 2025 ©  
+Feel free to contribute or fork!

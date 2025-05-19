@@ -39,16 +39,28 @@
 
         <!-- Tab Content -->
         <div id="priceTab" class="tab-content">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <a href="chart-price-yearly.html" class="block bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <h3 class="text-gray-800 font-semibold text-lg mb-2">نمودار تغییرات قیمت بر اساس سال</h3>
-                    <p class="text-sm text-gray-500">بررسی روند قیمت در طول زمان</p>
+            <!-- تحلیل فروش -->
+            <h3 class="text-xl font-bold text-gray-800 mb-4 mt-6">📈 تحلیل فروش</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                <a href="chart-sale-price-yearly.html" class="block bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار قیمت سالانه</h4>
+                    <p class="text-sm text-gray-500">میانگین قیمت فروش در سال‌های مختلف</p>
                 </a>
-                <a href="chart-price-monthly.html" class="block bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <h3 class="text-gray-800 font-semibold text-lg mb-2">نمودار تغییرات قیمت بر اساس ماه</h3>
-                    <p class="text-sm text-gray-500">بررسی روند قیمت در طول یک سال</p>
+                <a href="chart-sale-price-monthly.html" class="block bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار قیمت ماهانه</h4>
+                    <p class="text-sm text-gray-500">میانگین قیمت فروش در ماه‌های مختلف</p>
                 </a>
             </div>
+
+            <!-- تحلیل اجاره -->
+            <h3 class="text-xl font-bold text-gray-800 mb-4 mt-8">💸 تحلیل اجاره</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="chart-rent-price.html" class="block bg-white border border-green-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار رهن و اجاره</h4>
+                    <p class="text-sm text-gray-500">مقایسه میانگین مبالغ ودیعه و اجاره ماهانه در طول زمان</p>
+                </a>
+            </div>
+
         </div>
 
         <div id="regionTab" class="tab-content hidden">

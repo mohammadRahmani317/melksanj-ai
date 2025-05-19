@@ -28,7 +28,7 @@
 
 <main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار تغییرات قیمت ماهانه</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش (ماهیانه)</h2>
 
         <!-- فیلترها -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
@@ -38,16 +38,6 @@
                     <label class="block text-sm mb-1">شهر</label>
                     <select id="citySelect" class="w-full p-2 border rounded mb-4"></select>
                 </div>
-                <div class="mb-4 flex items-center space-x-4 space-x-reverse">
-                    <label class="flex items-center space-x-2 space-x-reverse">
-                        <input type="radio" name="saleRent" value="sale" class="form-radio text-blue-600"/>
-                        <span>فروش</span>
-                    </label>
-                    <label class="flex items-center space-x-2 space-x-reverse">
-                        <input type="radio" name="saleRent" value="rent" class="form-radio text-blue-600"/>
-                        <span>اجاره</span>
-                    </label>
-                </div>
                 <div>
                     <label class="block text-sm mb-1">سال</label>
                     <select id="yearSelect" class="w-full p-2 border rounded"></select>
@@ -56,14 +46,17 @@
 
             <!-- فیلترهای پیشرفته -->
             <div class="bg-white p-6 rounded-lg shadow-sm border">
+
+                <div>
+                    <label class="block text-sm mb-1">نوع کاربری ملک</label>
+                    <select id="groupSelect" class="w-full p-2 border rounded mb-4"></select>
+                </div>
+
                 <div>
                     <label class="block text-sm mb-1">نوع ملک</label>
-                    <select id="categorySelect" class="w-full p-2 border rounded mb-4"></select>
+                    <select id="categorySelect" class="w-full p-2 border rounded"></select>
                 </div>
-                <div>
-                    <label class="block text-sm mb-1">نوع آگهی</label>
-                    <select id="groupSelect" class="w-full p-2 border rounded"></select>
-                </div>
+
             </div>
         </div>
 
@@ -83,14 +76,14 @@
     async function fetchData() {
         try {
             const [cities, groups, categories, years] = await Promise.all([
-                fetch('http://localhost:8080/api/melksanj/meta/cities').then(r => r.json()),
-                fetch('http://localhost:8080/api/melksanj/meta/groups').then(r => r.json()),
-                fetch('http://localhost:8080/api/melksanj/meta/categories').then(r => r.json()),
-                fetch('http://localhost:8080/api/melksanj/meta/years').then(r => r.json())
+                fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/base/years').then(r => r.json())
             ]);
 
-            fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa");
-            fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true);
+            fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa",false,getTehranId(cities));
+            fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true,"residential");
             fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
             fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
         } catch (error) {
@@ -98,7 +91,7 @@
         }
     }
 
-    function fillSelect(select, data, valueKey, textKey, addAll = false) {
+    function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
         select.innerHTML = "";
         if (addAll) {
             const opt = document.createElement("option");
@@ -111,7 +104,17 @@
             opt.value = item[valueKey];
             opt.textContent = item[textKey];
             select.appendChild(opt);
+
+            // انتخاب پیش‌فرض
+            if (defaultValue && item[valueKey] === defaultValue) {
+                opt.selected = true;
+            }
         });
+    }
+
+    function getTehranId(cities) {
+        const tehran = cities.find(c => c.nameFa === "تهران" || c.nameFa.includes("تهران"));
+        return tehran ? tehran.id : null;
     }
 
     async function loadChart() {
@@ -119,15 +122,13 @@
         const year = document.getElementById("yearSelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
-        const selectedSaleRent = document.querySelector('input[name="saleRent"]:checked');
 
-        if (!cityId || !year || !selectedSaleRent) {
-            alert("لطفاً تمام فیلترها را انتخاب کنید");
+        if (!cityId || !year) {
+            alert("لطفاً شهر و سال را انتخاب کنید");
             return;
         }
 
-        const isSell = selectedSaleRent.value === 'sale';
-        let url = `http://localhost:8080/api/melksanj/price/monthly?cityId=${cityId}&year=${year}&isSell=${isSell}`;
+        let url = `http://localhost:8080/api/melksanj/price/sale/monthly?cityId=${cityId}&year=${year}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
 
@@ -193,7 +194,6 @@
             alert("خطا در دریافت داده‌ها: " + err.message);
         }
     }
-
 
     window.onload = fetchData;
 </script>

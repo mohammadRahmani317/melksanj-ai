@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum CityEnum {
-    KARAJ("کرج"),
     TEHRAN("تهران"),
+    KARAJ("کرج"),
     MASHHAD("مشهد"),
     AHVAZ("اهواز"),
     KERMANSHAH("کرمانشاه"),

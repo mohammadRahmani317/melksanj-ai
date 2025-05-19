@@ -20,14 +20,13 @@ public class MelksanjController {
     private final OpenAIService openAIService;
 
     /**
-     * Import real estate ads data from CSV file into the database.
+     * Imports real estate advertisement data from a CSV file into the database.
+     * This endpoint is typically used for bulk data insertion during initialization or updates.
      */
     @PostMapping("/data/import")
     public void importCsvData() {
         melksanjService.importCsvData();
     }
-
-
 
     @GetMapping("/translate")
     public String translate(@RequestParam String cityName) {

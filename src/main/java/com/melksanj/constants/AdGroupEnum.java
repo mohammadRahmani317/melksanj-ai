@@ -34,17 +34,7 @@ public enum AdGroupEnum {
     }
 
     public static List<String> fromCodeAndIsSell(String code, boolean isSell) {
-        if (code == null) {
-            return Arrays.stream(values())
-                    .map(AdGroupEnum::getCode)
-                    .filter(c -> {
-                        if (isSell) {
-                            return c.endsWith("-sell");
-                        } else {
-                            return c.endsWith("-rent");
-                        }
-                    }).toList();
-        }
+
         AdGroupEnum adGroupEnum = Arrays.stream(values())
                 .filter(f -> f.code.equals(code))
                 .findAny()

@@ -38,7 +38,7 @@ public class MelksanjService {
 
     private final Map<String, AdGroup> groupCache = new HashMap<>();
     private final Map<String, AdCategory> categoryCache = new HashMap<>();
-    private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
+
 
     @Transactional
     public void importCsvData() {
@@ -80,100 +80,6 @@ public class MelksanjService {
         } catch (Exception e) {
             log.error("❌ Error importing file {}: {}", fileName, e.getMessage(), e);
         }
-    }
-
-    public List<City> fetchAllCities() {
-        return cityRepository.findAll();
-    }
-
-    public List<AdGroupDTO> fetchAllAdGroups() {
-        return Arrays.stream(AdDisplayGroupEnum.values())
-                .map(adDisplayGroupEnum -> new AdGroupDTO(adDisplayGroupEnum.getCode(), adDisplayGroupEnum.getTitle()))
-                .toList();
-    }
-
-    public List<AdCategoryDTO> fetchAllAdCategories() {
-        return Arrays.stream(AdDisplayCategoryEnum.values())
-                .map(adDisplayCategoryEnum -> new AdCategoryDTO(adDisplayCategoryEnum.getCode(), adDisplayCategoryEnum.getTitle()))
-                .toList();
-
-    }
-
-    public Map<String, String> getYearlyAveragePrices(Long cityId, String groupCode, String categoryCode, boolean isSale) {
-
-        List<String> adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSale);
-        List<String> adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSale);
-
-        List<Object[]> results = realEstateAdRepository.findAveragePricePerYear(
-                cityId,
-                adGroupEnum,
-                adCategoryEnum
-        );
-
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> {
-                            Integer yearGregorian = (Integer) row[0];
-                            // تبدیل به LocalDate ابتدای سال میلادی (مثلاً 1 فروردین معادل 1 ژانویه)
-                            LocalDate gregorianDate = LocalDate.of(yearGregorian, 1, 1);
-                            PersianDate persianDate = PersianDate.fromGregorian(gregorianDate);
-                            return String.valueOf(persianDate.getYear());
-                        },
-                        row -> {
-                            Double avgPrice = (Double) row[1];
-                            return decimalFormat.format(avgPrice / 1_000_000_000.0);
-                        },
-                        (v1, v2) -> v1,
-                        TreeMap::new
-                ));
-    }
-
-    public Map<String, String> getAveragePriceByMonthAndYear(Long cityId, String groupCode, String categoryCode, Integer year, boolean isSell) {
-
-        List<String> adGroupEnum = AdGroupEnum.fromCodeAndIsSell(groupCode, isSell);
-        List<String> adCategoryEnum = AdCategoryEnum.fromCodeAndIsSell(categoryCode, isSell);
-
-        List<Object[]> results = realEstateAdRepository.findAveragePriceByMonthAndYear(
-                cityId,
-                adGroupEnum,
-                adCategoryEnum,
-                year
-        );
-
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> extractKey(row, year),
-                        this::extractValue,
-                        (v1, v2) -> v1,
-                        TreeMap::new
-                ));
-    }
-
-
-    private String extractKey(Object[] row, int year) {
-        Integer monthGregorian = (Integer) row[0];
-        LocalDate gregorianDate = LocalDate.of(year, monthGregorian, 1);
-        PersianDate persianDate = PersianDate.fromGregorian(gregorianDate);
-        return persianDate.getYear() + "/" + persianDate.getMonthValue();
-    }
-
-    private String extractValue(Object[] row) {
-        Double avgPrice = (Double) row[1];
-        return decimalFormat.format(avgPrice / 1_000_000_000.0);
-    }
-
-    public List<YearDto> findDistinctYears() {
-
-        List<Integer> years = realEstateAdRepository.findDistinctYears();
-        return years.stream()
-                .map(year -> {
-                    // تبدیل سال میلادی به اولین روز از اون سال
-                    LocalDate gregorianDate = LocalDate.of(year, 1, 1);
-                    // تبدیل به شمسی
-                    com.github.mfathi91.time.PersianDate persianDate = com.github.mfathi91.time.PersianDate.fromGregorian(gregorianDate);
-                    return new YearDto(year, String.valueOf(persianDate.getYear()));
-                })
-                .collect(Collectors.toList());
     }
 
     private RealEstateAd mapRecordToEntity(CSVRecord r) {
