@@ -1,6 +1,6 @@
 package com.melksanj.web;
 
-import com.melksanj.service.MelksanjService;
+import com.melksanj.repository.RealEstateAdRepository;
 import com.melksanj.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +16,7 @@ import java.util.Map;
 public class PriceController {
 
     private final PriceService priceService;
+    private final RealEstateAdRepository realEstateAdRepository;
 
     /**
      * Returns the average sale price per year (in billion tomans) for a specific city and optional filters.
@@ -49,5 +50,15 @@ public class PriceController {
         return priceService.getAveragePriceByMonthAndYear(cityId, groupCode, categoryCode, year);
     }
 
+
+    @GetMapping("/rent/monthly")
+    public Map<String, Map<String, Double>> getRentMonthlyChart(
+            @RequestParam Long cityId,
+            @RequestParam Integer year,
+            @RequestParam(required = false) String groupCode,
+            @RequestParam(required = false) String categoryCode
+    ) {
+        return priceService.getMonthlyRentStats(cityId, year, groupCode, categoryCode);
+    }
 
 }

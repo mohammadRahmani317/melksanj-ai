@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نمودار قیمت ماهانه - سامانه تحلیل قیمت املاک</title>
+    <title>نمودار اجاره ماهانه - سامانه تحلیل قیمت املاک</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -26,9 +26,10 @@
     </div>
 </header>
 
+<!-- Main -->
 <main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش (ماهیانه)</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار رهن و اجاره در ماه‌های سال</h2>
 
         <!-- فیلترها -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
@@ -46,7 +47,6 @@
 
             <!-- فیلترهای پیشرفته -->
             <div class="bg-white p-6 rounded-lg shadow-sm border">
-
                 <div>
                     <label class="block text-sm mb-1">نوع کاربری ملک</label>
                     <select id="groupSelect" class="w-full p-2 border rounded mb-4"></select>
@@ -56,7 +56,6 @@
                     <label class="block text-sm mb-1">نوع ملک</label>
                     <select id="categorySelect" class="w-full p-2 border rounded"></select>
                 </div>
-
             </div>
         </div>
 
@@ -68,10 +67,12 @@
     </div>
 </main>
 
+<!-- Footer -->
 <footer class="bg-white border-t border-gray-200 text-center py-4 text-sm text-gray-500 mt-10">
     داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند.
 </footer>
 
+<!-- Scripts -->
 <script>
     async function fetchData() {
         try {
@@ -82,12 +83,12 @@
                 fetch('http://localhost:8080/api/melksanj/base/years').then(r => r.json())
             ]);
 
-            fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa",false,getTehranId(cities));
-            fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true,"residential");
+            fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
+            fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true, "residential");
             fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
             fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
         } catch (error) {
-            console.log("خطا در بارگذاری داده‌ها: ");
+            console.error("خطا در بارگذاری داده‌ها: ", error);
         }
     }
 
@@ -104,8 +105,6 @@
             opt.value = item[valueKey];
             opt.textContent = item[textKey];
             select.appendChild(opt);
-
-            // انتخاب پیش‌فرض
             if (defaultValue && item[valueKey] === defaultValue) {
                 opt.selected = true;
             }
@@ -122,13 +121,14 @@
         const year = document.getElementById("yearSelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
+        const yearShamsi = yearSelect.options[yearSelect.selectedIndex].text;
 
         if (!cityId || !year) {
             alert("لطفاً شهر و سال را انتخاب کنید");
             return;
         }
 
-        let url = `http://localhost:8080/api/melksanj/price/sale/monthly?cityId=${cityId}&year=${year}`;
+        let url = `http://localhost:8080/api/melksanj/price/rent/monthly?cityId=${cityId}&year=${year}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
 
@@ -137,20 +137,11 @@
             if (!response.ok) throw new Error("خطا در دریافت داده‌ها از سرور");
             const data = await response.json();
 
-            // نگاشت شماره ماه به نام ماه فارسی
             const persianMonths = {
-                "1": "فروردین",
-                "2": "اردیبهشت",
-                "3": "خرداد",
-                "4": "تیر",
-                "5": "مرداد",
-                "6": "شهریور",
-                "7": "مهر",
-                "8": "آبان",
-                "9": "آذر",
-                "10": "دی",
-                "11": "بهمن",
-                "12": "اسفند"
+                "1": "فروردین", "2": "اردیبهشت", "3": "خرداد",
+                "4": "تیر", "5": "مرداد", "6": "شهریور",
+                "7": "مهر", "8": "آبان", "9": "آذر",
+                "10": "دی", "11": "بهمن", "12": "اسفند"
             };
 
             const months = Object.keys(data);
@@ -160,33 +151,38 @@
                 return persianMonths[monthNum] || m;
             });
 
-            const values = Object.values(data).map(v => parseFloat(v));
+            const rentValues = months.map(m => data[m]?.rent ?? 0);
+            const creditValues = months.map(m => data[m]?.credit ?? 0);
 
             Highcharts.chart('priceChart', {
                 chart: {
-                    type: 'line',
+                    type: 'column',
                     style: { fontFamily: 'Vazir, IRANSans, Tahoma' }
                 },
                 title: {
-                    text: `میانگین قیمت هر متر مربع در ماه‌های سال ${year}`
+                    text: `مبالغ رهن و اجاره در ماه‌های سال ${yearShamsi}`
                 },
                 xAxis: {
                     categories: persianMonthNames,
                     title: { text: 'ماه' }
                 },
                 yAxis: {
-                    title: { text: 'قیمت (میلیارد تومان)' },
+                    title: { text: 'مبلغ (میلیون تومان)' },
                     labels: {
                         formatter: function () {
-                            return this.value + ' میلیارد';
+                            return this.value + ' م';
                         }
                     }
                 },
-                series: [{
-                    name: 'قیمت ماهانه',
-                    data: values
-                }],
-                credits: { enabled: false }
+                series: [
+                    { name: 'رهن (میلیون تومان)', data: creditValues, color: '#4ade80' },
+                    { name: 'اجاره ماهانه (میلیون تومان)', data: rentValues, color: '#60a5fa' }
+                ],
+                credits: { enabled: false },
+                lang: {
+                    loading: 'در حال بارگذاری...',
+                    noData: 'داده‌ای برای نمایش وجود ندارد'
+                }
             });
 
         } catch (err) {
@@ -197,5 +193,6 @@
 
     window.onload = fetchData;
 </script>
+
 </body>
 </html>

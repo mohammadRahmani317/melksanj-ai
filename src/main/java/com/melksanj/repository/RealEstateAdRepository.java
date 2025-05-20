@@ -45,4 +45,24 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                                                   @Param("categoryCodes") List<String> categoryCodes,
                                                   @Param("year") int year);
 
+    @Query("""
+  SELECT FUNCTION('MONTH', r.createdAtMonth) as month,
+         AVG(r.creditValue) as credit,
+         AVG(r.rentValue) as rent
+  FROM RealEstateAd r
+  WHERE r.city.id = :cityId
+    AND FUNCTION('YEAR', r.createdAtMonth) = :year
+    AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
+    AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+  GROUP BY FUNCTION('MONTH', r.createdAtMonth)
+  ORDER BY FUNCTION('MONTH', r.createdAtMonth)
+""")
+    List<Object[]> getRentMonthlyAverages(
+            @Param("cityId") Long cityId,
+            @Param("year") Integer year,
+            @Param("groupCodes") List<String> groupCodes,
+            @Param("categoryCodes") List<String> categoryCodes
+    );
+
+
 }

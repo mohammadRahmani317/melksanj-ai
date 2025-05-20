@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,8 +54,40 @@ public class PriceService {
         return result;
     }
 
+    public Map<String, Map<String, Double>> getMonthlyRentStats(Long cityId, Integer year, String groupCode, String categoryCode) {
+
+        List<String> groupCodes = AdGroupEnum.fromCodeAndIsSell(groupCode, false);
+        List<String> categoryCodes = AdCategoryEnum.fromCodeAndIsSell(categoryCode, false);
+
+        List<Object[]> rows = realEstateAdRepository.getRentMonthlyAverages(cityId, year, groupCodes, categoryCodes);
+
+        Map<String, Map<String, Double>> result = new TreeMap<>();
+        for (Object[] row : rows) {
+            Integer monthNum = (Integer) row[0];
+            Double credit = (Double) row[1];
+            Double rent = (Double) row[2];
+
+            String persianYearMonth = DateUtils.toPersianYearMonth(year, monthNum);
+            Map<String, Double> map = new HashMap<>();
+            map.put("credit", credit != null ? Double.parseDouble(formatPrice(credit)) :0);
+            map.put("rent", rent != null ? Double.parseDouble(formatPrice(rent)) :0);
+
+            result.put(persianYearMonth, map);
+        }
+
+        return result;
+    }
+
 
     private String formatPrice(Double price) {
-        return decimalFormat.format(price / 1_000_000_000.0);
+        if (price == null) return "-";
+
+        if (price >= 1_000_000_000) {
+            return decimalFormat.format(price / 1_000_000_000.0) ;
+        } else if (price >= 1_000_000) {
+            return decimalFormat.format(price / 1_000_000.0) ;
+        } else {
+            return decimalFormat.format(price) + " تومان";
+        }
     }
 }
