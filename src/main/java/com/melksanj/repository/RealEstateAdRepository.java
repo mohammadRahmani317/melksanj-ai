@@ -13,15 +13,15 @@ import java.util.List;
 public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long> {
 
     @Query("""
-    SELECT FUNCTION('YEAR', r.createdAtMonth), AVG(r.priceValue)
-    FROM RealEstateAd r
-    WHERE r.city.id = :cityId
-    AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
-    AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
-    GROUP BY FUNCTION('YEAR', r.createdAtMonth)
-    ORDER BY FUNCTION('YEAR', r.createdAtMonth)
-""")
-    List<Object[]> findAveragePricePerYear(
+                SELECT FUNCTION('YEAR', r.createdAtMonth), AVG(r.priceValue)
+                FROM RealEstateAd r
+                WHERE r.city.id = :cityId
+                AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
+                AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                GROUP BY FUNCTION('YEAR', r.createdAtMonth)
+                ORDER BY FUNCTION('YEAR', r.createdAtMonth)
+            """)
+    List<Object[]> findYearlyAverageSalePrices(
             @Param("cityId") Long cityId,
             @Param("groupCodes") List<String> groupCodes,
             @Param("categoryCodes") List<String> categoryCodes
@@ -40,29 +40,83 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
              GROUP BY FUNCTION('MONTH', r.createdAtMonth)
              ORDER BY FUNCTION('MONTH', r.createdAtMonth)
             """)
-    List<Object[]> findAveragePriceByMonthAndYear(@Param("cityId") Long cityId,
-                                                  @Param("groupCodes") List<String> groupCodes,
-                                                  @Param("categoryCodes") List<String> categoryCodes,
-                                                  @Param("year") int year);
+    List<Object[]> findMonthlyAverageSalePrices(@Param("cityId") Long cityId,
+                                                @Param("groupCodes") List<String> groupCodes,
+                                                @Param("categoryCodes") List<String> categoryCodes,
+                                                @Param("year") int year);
 
     @Query("""
-  SELECT FUNCTION('MONTH', r.createdAtMonth) as month,
-         AVG(r.creditValue) as credit,
-         AVG(r.rentValue) as rent
-  FROM RealEstateAd r
-  WHERE r.city.id = :cityId
-    AND FUNCTION('YEAR', r.createdAtMonth) = :year
-    AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
-    AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
-  GROUP BY FUNCTION('MONTH', r.createdAtMonth)
-  ORDER BY FUNCTION('MONTH', r.createdAtMonth)
-""")
-    List<Object[]> getRentMonthlyAverages(
+                SELECT FUNCTION('YEAR', r.createdAtMonth) as year,
+                       AVG(r.creditValue) as credit,
+                       AVG(r.rentValue) as rent
+                FROM RealEstateAd r
+                WHERE r.city.id = :cityId
+                  AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
+                  AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                GROUP BY FUNCTION('YEAR', r.createdAtMonth)
+                ORDER BY FUNCTION('YEAR', r.createdAtMonth)
+            """)
+    List<Object[]> findYearlyAverageRentAndCredit(
+            @Param("cityId") Long cityId,
+            @Param("groupCodes") List<String> groupCodes,
+            @Param("categoryCodes") List<String> categoryCodes
+    );
+
+    @Query("""
+             SELECT FUNCTION('MONTH', r.createdAtMonth) as month,
+                    AVG(r.creditValue) as credit,
+                    AVG(r.rentValue) as rent
+             FROM RealEstateAd r
+             WHERE r.city.id = :cityId
+               AND FUNCTION('YEAR', r.createdAtMonth) = :year
+               AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
+               AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+             GROUP BY FUNCTION('MONTH', r.createdAtMonth)
+             ORDER BY FUNCTION('MONTH', r.createdAtMonth)
+            """)
+    List<Object[]> findMonthlyAverageRentAndCredit(
             @Param("cityId") Long cityId,
             @Param("year") Integer year,
             @Param("groupCodes") List<String> groupCodes,
             @Param("categoryCodes") List<String> categoryCodes
     );
 
+
+    @Query("""
+                        SELECT FUNCTION('YEAR', r.createdAtMonth), AVG(r.priceValue / r.buildingSize)
+                                    FROM RealEstateAd r
+                                    WHERE r.city.id = :cityId
+                                      AND r.priceValue IS NOT NULL
+                                      AND r.buildingSize IS NOT NULL AND r.buildingSize > 10
+                                      AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
+                                      AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                                    GROUP BY FUNCTION('YEAR', r.createdAtMonth)
+                                    ORDER BY FUNCTION('YEAR', r.createdAtMonth)
+            """)
+    List<Object[]> findYearlyAveragePricePerSquareMeter(
+            @Param("cityId") Long cityId,
+            @Param("groupCodes") List<String> groupCodes,
+            @Param("categoryCodes") List<String> categoryCodes
+    );
+
+
+    @Query("""
+                SELECT FUNCTION('MONTH', r.createdAtMonth), AVG(r.priceValue / r.buildingSize)
+                FROM RealEstateAd r
+                WHERE r.city.id = :cityId
+                  AND FUNCTION('YEAR', r.createdAtMonth) = :year
+                  AND r.priceValue IS NOT NULL
+                  AND r.buildingSize IS NOT NULL AND r.buildingSize > 10
+                  AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
+                  AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                GROUP BY FUNCTION('MONTH', r.createdAtMonth)
+                ORDER BY FUNCTION('MONTH', r.createdAtMonth)
+            """)
+    List<Object[]> findMonthlyAveragePricePerSquareMeter(
+            @Param("cityId") Long cityId,
+            @Param("groupCodes") List<String> groupCodes,
+            @Param("categoryCodes") List<String> categoryCodes,
+            @Param("year") int year
+    );
 
 }

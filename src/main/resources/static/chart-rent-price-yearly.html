@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نمودار تغییرات قیمت سالانه - فروش</title>
+    <title>نمودار تغییرات رهن و اجاره سالانه</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -14,7 +14,6 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col font-sans">
 
-<!-- Header -->
 <header class="bg-white shadow-sm">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
         <h1 class="text-lg font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
@@ -26,35 +25,26 @@
     </div>
 </header>
 
-<!-- Main -->
 <main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش (سالیانه)</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین رهن و اجاره (سالیانه)</h2>
 
-        <!-- فیلترها -->
         <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
             <div class="flex flex-nowrap gap-6">
-                <!-- شهر -->
                 <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">شهر</label>
                     <select id="citySelect" class="w-full p-2 border rounded"></select>
                 </div>
-
-                <!-- نوع ملک -->
                 <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع کاربری ملک</label>
                     <select id="groupSelect" class="w-full p-2 border rounded"></select>
                 </div>
-
-                <!-- نوع کاربری ملک -->
                 <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع ملک</label>
                     <select id="categorySelect" class="w-full p-2 border rounded"></select>
                 </div>
-
             </div>
         </div>
-
 
         <button onclick="loadChart()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mb-6">
             نمایش نمودار
@@ -77,7 +67,7 @@
         ]);
         fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
         fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
-        fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, 'apartment');
+        fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, "apartment");
     }
 
     function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
@@ -93,8 +83,6 @@
             opt.value = item[valueKey];
             opt.textContent = item[textKey];
             select.appendChild(opt);
-
-            // انتخاب پیش‌فرض
             if (defaultValue && item[valueKey] === defaultValue) {
                 opt.selected = true;
             }
@@ -116,65 +104,64 @@
             return;
         }
 
-        if (!groupCode) {
-            alert("لطفاً نوع کاربری ملک را انتخاب کنید");
-            return;
-        }
-
-        let url = `http://localhost:8080/api/melksanj/price/sale/yearly?cityId=${cityId}`;
+        let url = `http://localhost:8080/api/melksanj/price/rent/yearly?cityId=${cityId}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
 
         try {
             const data = await fetch(url).then(r => r.json());
 
-            /*const data = {
-                "1395": 10.5,
-                "1396": 10.5,
-                "1397": 10.5,
-                "1398": 10.5,
-                "1399": 14.3,
-                "1400": 20.1,
-                "1401": 27.6,
-                "1402": 35.2,
-                "1403": 40.8
-            };*/
-
-
             const years = Object.keys(data);
-            const values = Object.values(data).map(Number);
+            const creditValues = years.map(year => data[year].credit);
+            const rentValues = years.map(year => data[year].rent);
+
+           /* const years = ['1399', '1400', '1401', '1402', '1403'];
+            const creditValues = [825, 8256, 5000, 6000, 6200]; // رهن به میلیون تومان
+            const rentValues = [25, 30, 35, 40, 42]; // اجاره به میلیون تومان*/
 
             Highcharts.chart('priceChart', {
-                chart: {
-                    type: 'line',
-                    style: {fontFamily: 'Vazir, IRANSans, Tahoma'}
-                },
-                title: {
-                    text: 'میانگین قیمت فروش در سال‌های مختلف'
-                },
+                chart: {type: 'line'},
+                title: {text: 'میانگین رهن و اجاره در سال‌های مختلف'},
                 xAxis: {
                     categories: years,
                     title: {text: 'سال شمسی'}
                 },
-                yAxis: {
-                    title: {text: 'قیمت (میلیارد تومان)'},
+                yAxis: [{
+                    title: {
+                        text: 'رهن (میلیارد تومان)'
+                    },
                     labels: {
                         formatter: function () {
-                            return this.value + ' میلیارد';
+                            return formatDynamicUnit(this.value);
                         }
                     }
-                }, tooltip: {
+                }, {
+                    title: {
+                        text: 'اجاره (میلیون تومان)'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value + ' میلیون';
+                        }
+                    },
+                    opposite: true
+                }],
+                tooltip: {
+                    shared: true,
                     formatter: function () {
-                        return `<div><b>سال ${this.key}</b><br><br/>میانگین قیمت: ${this.y} میلیارد تومان</div>`;
+                        let s = `<div><b>سال ${this.key}</b><br/><br/>`;
+                        this.points.forEach(point => {
+                            s += `${point.series.name}: ${formatDynamicUnit(point.y)}<br/>`;
+                        });
+                        return s;
                     }
                 },
-                series: [{
-                    name: 'قیمت میانگین فروش',
-                    data: values
-                }],
+                series: [
+                    {name: 'رهن (میانگین)', data: creditValues, yAxis: 0},
+                    {name: 'اجاره (میانگین)', data: rentValues, yAxis: 1}
+                ],
                 credits: {enabled: false},
                 lang: {
-                    loading: 'در حال بارگذاری...',
                     noData: 'داده‌ای برای نمایش وجود ندارد'
                 }
             });
@@ -182,6 +169,14 @@
         } catch (err) {
             console.error(err);
             alert("خطا در دریافت داده‌ها");
+        }
+    }
+
+    function formatDynamicUnit(val) {
+        if (val >= 1000) {
+            return (val / 1000) + ' میلیارد';
+        } else {
+            return val + ' میلیون';
         }
     }
 

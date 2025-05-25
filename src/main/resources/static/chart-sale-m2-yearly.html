@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نمودار قیمت ماهانه - سامانه تحلیل قیمت املاک</title>
+    <title>میانگین قیمت هر متر مربع - سالانه (فروش)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -26,37 +26,31 @@
     </div>
 </header>
 
+<!-- Main -->
 <main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش (ماهیانه)</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش هر متر مربع (سالیانه)</h2>
 
         <!-- فیلترها -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
-            <!-- فیلترهای اصلی -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border">
-                <div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+            <div class="flex flex-nowrap gap-6">
+                <!-- شهر -->
+                <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">شهر</label>
-                    <select id="citySelect" class="w-full p-2 border rounded mb-4"></select>
+                    <select id="citySelect" class="w-full p-2 border rounded"></select>
                 </div>
-                <div>
-                    <label class="block text-sm mb-1">سال</label>
-                    <select id="yearSelect" class="w-full p-2 border rounded"></select>
-                </div>
-            </div>
 
-            <!-- فیلترهای پیشرفته -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border">
-
-                <div>
+                <!-- نوع کاربری ملک -->
+                <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع کاربری ملک</label>
-                    <select id="groupSelect" class="w-full p-2 border rounded mb-4"></select>
+                    <select id="groupSelect" class="w-full p-2 border rounded"></select>
                 </div>
 
-                <div>
+                <!-- نوع ملک -->
+                <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع ملک</label>
                     <select id="categorySelect" class="w-full p-2 border rounded"></select>
                 </div>
-
             </div>
         </div>
 
@@ -68,27 +62,21 @@
     </div>
 </main>
 
+<!-- Footer -->
 <footer class="bg-white border-t border-gray-200 text-center py-4 text-sm text-gray-500 mt-10">
     داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند.
 </footer>
 
 <script>
     async function fetchData() {
-        try {
-            const [cities, groups, categories, years] = await Promise.all([
-                fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json()),
-                fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
-                fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json()),
-                fetch('http://localhost:8080/api/melksanj/base/years').then(r => r.json())
-            ]);
-
-            fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
-            fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true, "residential");
-            fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true,"apartment");
-            fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
-        } catch (error) {
-            console.log("خطا در بارگذاری داده‌ها: ");
-        }
+        const [cities, groups, categories] = await Promise.all([
+            fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json())
+        ]);
+        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
+        fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
+        fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, 'apartment');
     }
 
     function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
@@ -105,7 +93,6 @@
             opt.textContent = item[textKey];
             select.appendChild(opt);
 
-            // انتخاب پیش‌فرض
             if (defaultValue && item[valueKey] === defaultValue) {
                 opt.selected = true;
             }
@@ -119,91 +106,81 @@
 
     async function loadChart() {
         const cityId = document.getElementById("citySelect").value;
-        const year = document.getElementById("yearSelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
 
-        if (!cityId || !year) {
-            alert("لطفاً شهر و سال را انتخاب کنید");
+        if (!cityId) {
+            alert("لطفاً یک شهر انتخاب کنید");
             return;
         }
 
-        const yearShamsi = yearSelect.options[yearSelect.selectedIndex].text;
+        if (!groupCode) {
+            alert("لطفاً نوع کاربری ملک را انتخاب کنید");
+            return;
+        }
 
-        let url = `http://localhost:8080/api/melksanj/price/sale/monthly?cityId=${cityId}&year=${year}`;
+        let url = `http://localhost:8080/api/melksanj/price/sale/m2/yearly?cityId=${cityId}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
 
         try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("خطا در دریافت داده‌ها از سرور");
-            const data = await response.json();
+            const data = await fetch(url).then(r => r.json());
 
-            const persianMonths = {
-                "1": "فروردین",
-                "2": "اردیبهشت",
-                "3": "خرداد",
-                "4": "تیر",
-                "5": "مرداد",
-                "6": "شهریور",
-                "7": "مهر",
-                "8": "آبان",
-                "9": "آذر",
-                "10": "دی",
-                "11": "بهمن",
-                "12": "اسفند"
-            };
-
-            const months = Object.keys(data);
-            const persianMonthNames = months.map(m => {
-                const parts = m.split('/');
-                const monthNum = parts[1];
-                return persianMonths[monthNum] || m;
-            });
-
-            const values = Object.values(data).map(v => parseFloat(v));
+            const years = Object.keys(data);
+            const values = Object.values(data).map(Number);
 
             Highcharts.chart('priceChart', {
                 chart: {
                     type: 'line',
-                    style: {fontFamily: 'Vazir, IRANSans, Tahoma'}
+                    style: { fontFamily: 'Vazir, IRANSans, Tahoma' }
                 },
                 title: {
-                    text: `میانگین قیمت هر متر مربع در ماه‌های سال ${yearShamsi}`
+                    text: 'میانگین قیمت فروش هر متر مربع در سال‌های مختلف'
                 },
                 xAxis: {
-                    categories: persianMonthNames,
-                    title: {text: 'ماه'}
+                    categories: years,
+                    title: { text: 'سال شمسی' }
                 },
                 yAxis: {
-                    title: {text: 'قیمت (میلیارد تومان)'},
+                    title: { text: 'قیمت هر متر مربع (میلیون تومان)' },
                     labels: {
                         formatter: function () {
-                            return this.value + ' میلیارد';
+                            return formatDynamicUnit(this.value);
                         }
                     }
                 },
                 tooltip: {
                     formatter: function () {
-                        const mounth = persianMonthNames[this.x] || this.x;
-                        return `<b>${mounth}</b></br><br/>قیمت ماهانه: ${this.y} میلیارد تومان`;
+                        return `<div><b>سال ${this.key}</b><br><br/>قیمت هر متر مربع: ${formatDynamicUnit(this.y)} تومان</div>`;
                     }
                 },
                 series: [{
-                    name: 'قیمت ماهانه',
+                    name: 'قیمت هر متر مربع',
                     data: values
                 }],
-                credits: {enabled: false}
+                credits: { enabled: false },
+                lang: {
+                    loading: 'در حال بارگذاری...',
+                    noData: 'داده‌ای برای نمایش وجود ندارد'
+                }
             });
-
 
         } catch (err) {
             console.error(err);
-            alert("خطا در دریافت داده‌ها: " + err.message);
+            alert("خطا در دریافت داده‌ها");
+        }
+    }
+
+    function formatDynamicUnit(val) {
+        if (val >= 1000) {
+            return (val / 1000) + ' میلیارد';
+        } else {
+            return val + ' میلیون';
         }
     }
 
     window.onload = fetchData;
 </script>
+
 </body>
 </html>

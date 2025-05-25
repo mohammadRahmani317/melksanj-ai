@@ -85,7 +85,7 @@
 
             fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
             fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true, "residential");
-            fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true);
+            fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true,"apartment");
             fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
         } catch (error) {
             console.error("خطا در بارگذاری داده‌ها: ", error);
@@ -121,12 +121,13 @@
         const year = document.getElementById("yearSelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
-        const yearShamsi = yearSelect.options[yearSelect.selectedIndex].text;
 
         if (!cityId || !year) {
             alert("لطفاً شهر و سال را انتخاب کنید");
             return;
         }
+
+        const yearShamsi = yearSelect.options[yearSelect.selectedIndex].text;
 
         let url = `http://localhost:8080/api/melksanj/price/rent/monthly?cityId=${cityId}&year=${year}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
@@ -138,56 +139,88 @@
             const data = await response.json();
 
             const persianMonths = {
-                "1": "فروردین", "2": "اردیبهشت", "3": "خرداد",
-                "4": "تیر", "5": "مرداد", "6": "شهریور",
-                "7": "مهر", "8": "آبان", "9": "آذر",
-                "10": "دی", "11": "بهمن", "12": "اسفند"
+                "1": "فروردین", "2": "اردیبهشت", "3": "خرداد", "4": "تیر",
+                "5": "مرداد", "6": "شهریور", "7": "مهر", "8": "آبان",
+                "9": "آذر", "10": "دی", "11": "بهمن", "12": "اسفند"
             };
 
-            const months = Object.keys(data);
-            const persianMonthNames = months.map(m => {
-                const parts = m.split('/');
-                const monthNum = parts[1];
-                return persianMonths[monthNum] || m;
+            const monthNames = Object.keys(data).map(k => {
+                const parts = k.split('/');
+                return persianMonths[parts[1]] || k;
             });
 
-            const rentValues = months.map(m => data[m]?.rent ?? 0);
-            const creditValues = months.map(m => data[m]?.credit ?? 0);
+            const creditValues = Object.values(data).map(v => v.credit);
+            const rentValues = Object.values(data).map(v => v.rent);
 
             Highcharts.chart('priceChart', {
                 chart: {
-                    type: 'column',
-                    style: { fontFamily: 'Vazir, IRANSans, Tahoma' }
-                },
-                title: {
-                    text: `مبالغ رهن و اجاره در ماه‌های سال ${yearShamsi}`
-                },
-                xAxis: {
-                    categories: persianMonthNames,
-                    title: { text: 'ماه' }
-                },
-                yAxis: {
-                    title: { text: 'مبلغ (میلیون تومان)' },
-                    labels: {
-                        formatter: function () {
-                            return this.value + ' م';
-                        }
+                    type: 'line',
+                    style: {
+                        fontFamily: 'Vazir, IRANSans, Tahoma'
                     }
                 },
-                series: [
-                    { name: 'رهن (میلیون تومان)', data: creditValues, color: '#4ade80' },
-                    { name: 'اجاره ماهانه (میلیون تومان)', data: rentValues, color: '#60a5fa' }
-                ],
-                credits: { enabled: false },
-                lang: {
-                    loading: 'در حال بارگذاری...',
-                    noData: 'داده‌ای برای نمایش وجود ندارد'
-                }
+                title: {
+                    text: 'نمودار میانگین رهن و اجاره (ماهیانه)'
+                },
+                xAxis: {
+                    categories: monthNames, // لیستی از نام ماه‌ها مثل ["اردیبهشت", "خرداد", ...]
+                    title: {text: 'ماه'}
+                },
+                yAxis: [{
+                    title: {
+                        text: 'رهن (میلیارد تومان)'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return formatDynamicUnit(this.value);
+                        }
+                    }
+                }, {
+                    title: {
+                        text: 'اجاره (میلیون تومان)'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value + ' میلیون';
+                        }
+                    },
+                    opposite: true
+                }],
+                tooltip: {
+                    shared: true,
+                    formatter: function () {
+                        const persianMonth = monthNames[this.x] || this.x;
+                        let s = `<b>${persianMonth}</b><br/>`;
+                        this.points.forEach(point => {
+                            s += `${point.series.name}: ${formatDynamicUnit(point.y)}<br/>`;
+                        });
+                        return s;
+                    }
+                },
+                series: [{
+                    name: 'رهن',
+                    data: creditValues, // لیستی از اعداد مثل [230, 588, ...]
+                    yAxis: 0
+                }, {
+                    name: 'اجاره',
+                    data: rentValues, // لیستی از اعداد مثل [7, 13, ...]
+                    yAxis: 1
+                }],
+                credits: {enabled: false}
             });
 
         } catch (err) {
             console.error(err);
             alert("خطا در دریافت داده‌ها: " + err.message);
+        }
+    }
+
+
+    function formatDynamicUnit(val) {
+        if (val >= 1000) {
+            return (val / 1000) + ' میلیارد تومان';
+        } else {
+            return val + ' میلیون تومان';
         }
     }
 
