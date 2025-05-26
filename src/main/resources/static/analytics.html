@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>نمودارهای تحلیلی - سامانه تحلیل قیمت املاک</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -26,7 +26,7 @@
 
 <!-- Main Content -->
 <main class="flex-grow px-4 pt-10" dir="rtl">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
 
         <!-- Tabs -->
         <div class="border-b border-gray-300 mb-6">
@@ -38,32 +38,50 @@
         </div>
 
         <!-- Tab Content -->
+
+        <!-- بخش قیمت با چینش ستون‌های عمودی کنار هم -->
         <div id="priceTab" class="tab-content">
-            <!-- تحلیل فروش -->
-            <h3 class="text-xl font-bold text-gray-800 mb-4 mt-6">📈 تحلیل فروش</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-                <a href="chart-sale-price-yearly.html" class="block bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار قیمت سالانه</h4>
-                    <p class="text-sm text-gray-500">میانگین قیمت فروش در سال‌های مختلف</p>
-                </a>
-                <a href="chart-sale-price-monthly.html" class="block bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار قیمت ماهانه</h4>
-                    <p class="text-sm text-gray-500">میانگین قیمت فروش در ماه‌های مختلف</p>
-                </a>
-            </div>
 
-            <!-- تحلیل اجاره -->
-            <h3 class="text-xl font-bold text-gray-800 mb-4 mt-8">💸 تحلیل اجاره</h3>
+            <div class="flex flex-col md:flex-row gap-8 overflow-x-auto px-1 py-2">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <a href="chart-rent-price-yearly.html" class="block bg-white border border-green-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار رهن و اجاره سالانه</h4>
-                    <p class="text-sm text-gray-500">مقایسه میانگین مبالغ ودیعه و اجاره سالانه در طول زمان</p>
-                </a>
-                <a href="chart-rent-price-monthly.html" class="block bg-white border border-green-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار رهن و اجاره ماهانه</h4>
-                    <p class="text-sm text-gray-500">مقایسه میانگین مبالغ ودیعه و اجاره ماهانه در طول زمان</p>
-                </a>
+                <!-- تحلیل فروش -->
+                <div class="flex flex-col gap-2 min-w-[320px] md:min-w-[320px]">
+                    <h3 class="text-xl text-gray-800 mb-4">📈 تحلیل فروش</h3>
+                    <a href="chart-sale-price-yearly.html" class="block bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                        <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار قیمت سالانه</h4>
+                        <p class="text-sm text-gray-500">میانگین قیمت فروش در سال‌های مختلف</p>
+                    </a>
+                    <a href="chart-sale-price-monthly.html" class="block bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                        <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار قیمت ماهانه</h4>
+                        <p class="text-sm text-gray-500">میانگین قیمت فروش در ماه‌های مختلف</p>
+                    </a>
+                </div>
+
+                <!-- تحلیل فروش بر اساس متر مربع -->
+                <div class="flex flex-col gap-2 min-w-[320px] md:min-w-[320px]">
+                    <h3 class="text-xl text-gray-800 mb-4">📏 تحلیل بر اساس هر متر مربع</h3>
+                    <a href="chart-sale-m2-yearly.html" class="block bg-white border border-indigo-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                        <h4 class="text-gray-800 font-semibold text-lg mb-2">قیمت هر متر مربع (سالانه)</h4>
+                        <p class="text-sm text-gray-500">میانگین قیمت فروش هر متر مربع در سال‌های مختلف</p>
+                    </a>
+                    <a href="chart-sale-m2-monthly.html" class="block bg-white border border-indigo-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                        <h4 class="text-gray-800 font-semibold text-lg mb-2">قیمت هر متر مربع (ماهیانه)</h4>
+                        <p class="text-sm text-gray-500">میانگین قیمت فروش هر متر مربع در ماه‌های سال</p>
+                    </a>
+                </div>
+
+                <!-- تحلیل اجاره -->
+                <div class="flex flex-col gap-2 min-w-[320px] md:min-w-[320px]">
+                    <h3 class="text-xl text-gray-800 mb-4">💸 تحلیل اجاره</h3>
+                    <a href="chart-rent-price-yearly.html" class="block bg-white border border-green-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                        <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار رهن و اجاره سالانه</h4>
+                        <p class="text-sm text-gray-500">مقایسه میانگین مبالغ ودیعه و اجاره سالانه در طول زمان</p>
+                    </a>
+                    <a href="chart-rent-price-monthly.html" class="block bg-white border border-green-100 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                        <h4 class="text-gray-800 font-semibold text-lg mb-2">نمودار رهن و اجاره ماهانه</h4>
+                        <p class="text-sm text-gray-500">مقایسه میانگین مبالغ ودیعه و اجاره ماهانه در طول زمان</p>
+                    </a>
+                </div>
             </div>
 
         </div>
@@ -102,8 +120,10 @@
 
         const active = Array.from(document.querySelectorAll('.tab-btn'))
             .find(btn => btn.getAttribute('onclick').includes(tabId));
-        active.classList.remove('text-gray-600', 'border-transparent');
-        active.classList.add('text-blue-600', 'border-blue-600');
+        if(active) {
+            active.classList.remove('text-gray-600', 'border-transparent');
+            active.classList.add('text-blue-600', 'border-blue-600');
+        }
     }
 
     // پیش‌فرض نمایش اولین تب
