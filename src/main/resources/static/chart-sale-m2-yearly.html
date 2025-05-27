@@ -40,7 +40,7 @@
                     <select id="citySelect" class="w-full p-2 border rounded"></select>
                 </div>
 
-                <div id="regionFilter" class="w-1/3 min-w-[150px]" style="display: none;">
+                <div id="regionFilter" class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">منطقه</label>
                     <select id="regionSelect" class="w-full p-2 border rounded"></select>
                 </div>
@@ -79,14 +79,31 @@
             fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
             fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json())
         ]);
-        const tehranId = getTehranId(cities);
 
-        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, tehranId);
+        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
         fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
         fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, 'apartment');
 
-        await handleRegionVisibility(tehranId);
+        document.getElementById("citySelect").addEventListener("change", handleCityChange);
+        await handleCityChange();
     }
+
+    async function handleCityChange() {
+        const citySelect = document.getElementById("citySelect");
+        const cityId = citySelect.value;
+        const cityName = citySelect.options[citySelect.selectedIndex].text;
+        const regionSelect = document.getElementById("regionSelect");
+
+        if (cityName.includes("تهران")) {
+            const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`).then(r => r.json());
+            fillSelect(regionSelect, regions, "id", "name", true);
+            regionSelect.disabled = false;
+        } else {
+            regionSelect.innerHTML = "";
+            regionSelect.disabled = true;
+        }
+    }
+
 
     function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
         select.innerHTML = "";
@@ -110,33 +127,6 @@
     function getTehranId(cities) {
         const tehran = cities.find(c => c.nameFa === "تهران" || c.nameFa.includes("تهران"));
         return tehran ? tehran.id : null;
-    }
-
-    document.getElementById("citySelect").addEventListener("change", async function () {
-        const cityId = this.value;
-        await handleRegionVisibility(cityId);
-    });
-
-    async function handleRegionVisibility(cityId) {
-        const regionContainer = document.getElementById("regionFilter");
-        const regionSelect = document.getElementById("regionSelect");
-
-        if (!cityId || cityId !== getTehranId(await fetchCities())) {
-            regionContainer.style.display = "none";
-            regionSelect.innerHTML = "";
-            return;
-        }
-
-        regionContainer.style.display = "block";
-
-        const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`)
-            .then(r => r.json());
-
-        fillSelect(regionSelect, regions, "id", "name", true);
-    }
-
-    async function fetchCities() {
-        return await fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json());
     }
 
     async function loadChart() {

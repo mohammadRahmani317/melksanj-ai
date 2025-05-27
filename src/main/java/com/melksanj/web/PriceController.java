@@ -115,7 +115,7 @@ public class PriceController {
                                                                    @RequestParam(required = false) String categoryCode,
                                                                    @RequestParam(required = false) Integer region
     ) {
-        return priceService.getYearlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode);
+        return priceService.getYearlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode,region);
     }
 
 

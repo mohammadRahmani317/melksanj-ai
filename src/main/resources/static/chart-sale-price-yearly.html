@@ -83,16 +83,29 @@
             fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json())
         ]);
 
-        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
+        const tehranId = getTehranId(cities);
+
+        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, tehranId);
         fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
         fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, 'apartment');
 
-        const tehranId = getTehranId(cities);
-        if (tehranId) {
-            await loadRegions(tehranId);
-            document.getElementById("regionSelect").disabled = false;
+        document.getElementById("citySelect").addEventListener("change", handleCityChange);
+        await handleCityChange();
+    }
+
+    async function handleCityChange() {
+        const citySelect = document.getElementById("citySelect");
+        const cityId = citySelect.value;
+        const cityName = citySelect.options[citySelect.selectedIndex].text;
+        const regionSelect = document.getElementById("regionSelect");
+
+        if (cityName.includes("تهران")) {
+            const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`).then(r => r.json());
+            fillSelect(regionSelect, regions, "id", "name", true);
+            regionSelect.disabled = false;
         } else {
-            document.getElementById("regionSelect").disabled = true;
+            regionSelect.innerHTML = "";
+            regionSelect.disabled = true;
         }
     }
 
@@ -119,51 +132,6 @@
     function getTehranId(cities) {
         const tehran = cities.find(c => c.nameFa === "تهران" || c.nameFa.includes("تهران"));
         return tehran ? tehran.id : null;
-    }
-
-    async function loadRegions(cityId) {
-        const regionSelect = document.getElementById("regionSelect");
-        regionSelect.innerHTML = '<option value="">همه</option>';
-        if (!cityId) {
-            regionSelect.disabled = true;
-            return;
-        }
-
-        try {
-            const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`).then(r => r.json());
-            regions.forEach(region => {
-                const opt = document.createElement("option");
-                opt.value = region.id;
-                opt.textContent = region.name;
-                regionSelect.appendChild(opt);
-            });
-            regionSelect.disabled = false;
-        } catch (err) {
-            console.error("خطا در بارگذاری مناطق:", err);
-            regionSelect.disabled = true;
-        }
-    }
-
-    // فعال/غیرفعال کردن فیلتر منطقه بر اساس انتخاب شهر
-    document.getElementById("citySelect").addEventListener("change", async function() {
-        const cityId = this.value;
-        const tehranId = getTehranIdFromSelect();
-
-        if (cityId === tehranId) {
-            await loadRegions(cityId);
-            document.getElementById("regionSelect").disabled = false;
-        } else {
-            const regionSelect = document.getElementById("regionSelect");
-            regionSelect.innerHTML = '<option value="">همه</option>';
-            regionSelect.disabled = true;
-        }
-    });
-
-    // دریافت id تهران از option های citySelect (که selected شده)
-    function getTehranIdFromSelect() {
-        const citySelect = document.getElementById("citySelect");
-        const selectedOption = citySelect.options[citySelect.selectedIndex];
-        return selectedOption ? selectedOption.value : null;
     }
 
     // بارگذاری نمودار

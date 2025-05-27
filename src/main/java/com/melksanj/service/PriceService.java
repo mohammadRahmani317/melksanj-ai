@@ -87,11 +87,12 @@ public class PriceService {
         return result;
     }
 
-    public Map<String, String> getYearlyAveragePricePerSquareMeter(Long cityId, String groupCode, String categoryCode) {
+    public Map<String, String> getYearlyAveragePricePerSquareMeter(Long cityId, String groupCode, String categoryCode, Integer region) {
         List<Object[]> rows = realEstateAdRepository.findYearlyAveragePricePerSquareMeter(
                 cityId,
                 AdGroupEnum.fromCodeAndIsSell(groupCode, true),
-                AdCategoryEnum.fromCodeAndIsSell(categoryCode, true)
+                AdCategoryEnum.fromCodeAndIsSell(categoryCode, true),
+                region
         );
 
         Map<String, String> result = new TreeMap<>();
