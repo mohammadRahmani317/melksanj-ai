@@ -1,10 +1,6 @@
 package com.melksanj.service;
 
-import com.github.mfathi91.time.PersianDate;
 import com.melksanj.constants.*;
-import com.melksanj.dto.AdCategoryDTO;
-import com.melksanj.dto.AdGroupDTO;
-import com.melksanj.dto.YearDto;
 import com.melksanj.model.*;
 import com.melksanj.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -4,9 +4,12 @@ import com.melksanj.constants.AdDisplayCategoryEnum;
 import com.melksanj.constants.AdDisplayGroupEnum;
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
-import com.melksanj.dto.YearDto;
+import com.melksanj.dto.RegionDTO;
+import com.melksanj.dto.YearDTO;
 import com.melksanj.model.City;
+import com.melksanj.model.Neighborhood;
 import com.melksanj.repository.CityRepository;
+import com.melksanj.repository.NeighborhoodRepository;
 import com.melksanj.repository.RealEstateAdRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ public class BaseService {
 
     private final RealEstateAdRepository realEstateAdRepository;
     private final CityRepository cityRepository;
+    private final NeighborhoodRepository neighborhoodRepository;
 
     public List<City> fetchAllCities() {
         return cityRepository.findAll();
@@ -40,7 +44,7 @@ public class BaseService {
 
     }
 
-    public List<YearDto> findDistinctYears() {
+    public List<YearDTO> findDistinctYears() {
 
         List<Integer> years = realEstateAdRepository.findDistinctYears();
         return years.stream()
@@ -49,10 +53,17 @@ public class BaseService {
                     LocalDate gregorianDate = LocalDate.of(year, 1, 1);
                     // تبدیل به شمسی
                     com.github.mfathi91.time.PersianDate persianDate = com.github.mfathi91.time.PersianDate.fromGregorian(gregorianDate);
-                    return new YearDto(year, String.valueOf(persianDate.getYear()));
+                    return new YearDTO(year, String.valueOf(persianDate.getYear()));
                 })
                 .collect(Collectors.toList());
     }
 
 
+    public List<RegionDTO> getRegionsByCity(Long cityId) {
+        List<Integer> regions = neighborhoodRepository.findDistinctRegionsByCityId(cityId);
+        return regions.stream()
+                .filter(f->!f.equals(0))
+                .map(r -> new RegionDTO(r, "منطقه " + r))
+                .collect(Collectors.toList());
+    }
 }

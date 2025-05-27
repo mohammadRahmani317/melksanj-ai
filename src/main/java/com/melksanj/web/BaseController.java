@@ -2,12 +2,14 @@ package com.melksanj.web;
 
 import com.melksanj.dto.AdCategoryDTO;
 import com.melksanj.dto.AdGroupDTO;
-import com.melksanj.dto.YearDto;
+import com.melksanj.dto.RegionDTO;
+import com.melksanj.dto.YearDTO;
 import com.melksanj.model.City;
 import com.melksanj.service.BaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,10 +54,15 @@ public class BaseController {
     /**
      * Retrieves a list of distinct years extracted from the real estate ads.
      *
-     * @return a list of {@link YearDto} representing available years.
+     * @return a list of {@link YearDTO} representing available years.
      */
     @GetMapping("/years")
-    public List<YearDto> getAvailableYears() {
+    public List<YearDTO> getAvailableYears() {
         return melksanjService.findDistinctYears();
+    }
+
+    @GetMapping("/regions")
+    public List<RegionDTO> getRegionsByCity(@RequestParam Long cityId) {
+        return melksanjService.getRegionsByCity(cityId);
     }
 }

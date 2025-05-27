@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class YearDto {
+public class YearDTO {
     private Integer miladi;
     private String shamsi;
 }

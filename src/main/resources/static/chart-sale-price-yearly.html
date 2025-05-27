@@ -35,26 +35,33 @@
         <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
             <div class="flex flex-nowrap gap-6">
                 <!-- شهر -->
-                <div class="w-1/3 min-w-[150px]">
+                <div class="w-1/4 min-w-[150px]">
                     <label class="block text-sm mb-1">شهر</label>
                     <select id="citySelect" class="w-full p-2 border rounded"></select>
                 </div>
 
-                <!-- نوع ملک -->
-                <div class="w-1/3 min-w-[150px]">
+                <!-- منطقه -->
+                <div class="w-1/4 min-w-[150px]">
+                    <label class="block text-sm mb-1">منطقه</label>
+                    <select id="regionSelect" class="w-full p-2 border rounded" disabled>
+                        <option value="">همه</option>
+                    </select>
+                </div>
+
+                <!-- نوع کاربری ملک -->
+                <div class="w-1/4 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع کاربری ملک</label>
                     <select id="groupSelect" class="w-full p-2 border rounded"></select>
                 </div>
 
-                <!-- نوع کاربری ملک -->
-                <div class="w-1/3 min-w-[150px]">
+                <!-- نوع ملک -->
+                <div class="w-1/4 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع ملک</label>
                     <select id="categorySelect" class="w-full p-2 border rounded"></select>
                 </div>
 
             </div>
         </div>
-
 
         <button onclick="loadChart()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mb-6">
             نمایش نمودار
@@ -75,9 +82,18 @@
             fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
             fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json())
         ]);
+
         fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
         fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
         fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, 'apartment');
+
+        const tehranId = getTehranId(cities);
+        if (tehranId) {
+            await loadRegions(tehranId);
+            document.getElementById("regionSelect").disabled = false;
+        } else {
+            document.getElementById("regionSelect").disabled = true;
+        }
     }
 
     function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
@@ -94,7 +110,6 @@
             opt.textContent = item[textKey];
             select.appendChild(opt);
 
-            // انتخاب پیش‌فرض
             if (defaultValue && item[valueKey] === defaultValue) {
                 opt.selected = true;
             }
@@ -106,16 +121,62 @@
         return tehran ? tehran.id : null;
     }
 
+    async function loadRegions(cityId) {
+        const regionSelect = document.getElementById("regionSelect");
+        regionSelect.innerHTML = '<option value="">همه</option>';
+        if (!cityId) {
+            regionSelect.disabled = true;
+            return;
+        }
+
+        try {
+            const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`).then(r => r.json());
+            regions.forEach(region => {
+                const opt = document.createElement("option");
+                opt.value = region.id;
+                opt.textContent = region.name;
+                regionSelect.appendChild(opt);
+            });
+            regionSelect.disabled = false;
+        } catch (err) {
+            console.error("خطا در بارگذاری مناطق:", err);
+            regionSelect.disabled = true;
+        }
+    }
+
+    // فعال/غیرفعال کردن فیلتر منطقه بر اساس انتخاب شهر
+    document.getElementById("citySelect").addEventListener("change", async function() {
+        const cityId = this.value;
+        const tehranId = getTehranIdFromSelect();
+
+        if (cityId === tehranId) {
+            await loadRegions(cityId);
+            document.getElementById("regionSelect").disabled = false;
+        } else {
+            const regionSelect = document.getElementById("regionSelect");
+            regionSelect.innerHTML = '<option value="">همه</option>';
+            regionSelect.disabled = true;
+        }
+    });
+
+    // دریافت id تهران از option های citySelect (که selected شده)
+    function getTehranIdFromSelect() {
+        const citySelect = document.getElementById("citySelect");
+        const selectedOption = citySelect.options[citySelect.selectedIndex];
+        return selectedOption ? selectedOption.value : null;
+    }
+
+    // بارگذاری نمودار
     async function loadChart() {
         const cityId = document.getElementById("citySelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
+        const region = document.getElementById("regionSelect").value;
 
         if (!cityId) {
             alert("لطفاً یک شهر انتخاب کنید");
             return;
         }
-
         if (!groupCode) {
             alert("لطفاً نوع کاربری ملک را انتخاب کنید");
             return;
@@ -124,22 +185,10 @@
         let url = `http://localhost:8080/api/melksanj/price/sale/yearly?cityId=${cityId}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
+        if (region) url += `&region=${region}`;
 
         try {
             const data = await fetch(url).then(r => r.json());
-
-            /*const data = {
-                "1395": 10.5,
-                "1396": 10.5,
-                "1397": 10.5,
-                "1398": 10.5,
-                "1399": 14.3,
-                "1400": 20.1,
-                "1401": 27.6,
-                "1402": 35.2,
-                "1403": 40.8
-            };*/
-
 
             const years = Object.keys(data);
             const values = Object.values(data).map(Number);
@@ -163,7 +212,8 @@
                             return this.value + ' میلیارد';
                         }
                     }
-                }, tooltip: {
+                },
+                tooltip: {
                     formatter: function () {
                         return `<div><b>سال ${this.key}</b><br><br/>میانگین قیمت: ${this.y} میلیارد تومان</div>`;
                     }

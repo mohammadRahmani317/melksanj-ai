@@ -22,13 +22,15 @@ public class PriceController {
      * @param cityId       the ID of the city (required)
      * @param groupCode    optional ad group code (e.g., apartment, villa)
      * @param categoryCode optional ad category code (e.g., residential, commercial)
+     * @param region       optional region of the city
      * @return a map where the key is the Persian year and the value is the average price (as a formatted string)
      */
     @GetMapping("/sale/yearly")
     public Map<String, String> getYearlyAverageSalePrices(@RequestParam Long cityId,
                                                           @RequestParam(required = false) String groupCode,
-                                                          @RequestParam(required = false) String categoryCode) {
-        return priceService.getYearlyAverageSalePrices(cityId, groupCode, categoryCode);
+                                                          @RequestParam(required = false) String categoryCode,
+                                                          @RequestParam(required = false) Integer region) {
+        return priceService.getYearlyAverageSalePrices(cityId, groupCode, categoryCode, region);
     }
 
     /**
@@ -51,7 +53,7 @@ public class PriceController {
 
     /**
      * Returns the average rent (اجاره) and deposit (رهن) values per Persian year for a given city.
-     *
+     * <p>
      * The result includes two separate series: one for rent values (in million tomans)
      * and one for deposit values (in billion tomans). Each year is returned as a string key.
      *
@@ -59,8 +61,8 @@ public class PriceController {
      * @param groupCode    optional ad group code (e.g., apartment, villa)
      * @param categoryCode optional ad category code (e.g., residential, commercial)
      * @return a map where each key is the Persian year, and each value is another map containing:
-     *         - "rentValue": average monthly rent (in million tomans)
-     *         - "creditValue": average deposit (in billion tomans)
+     * - "rentValue": average monthly rent (in million tomans)
+     * - "creditValue": average deposit (in billion tomans)
      */
     @GetMapping("/rent/yearly")
     public Map<String, Map<String, Long>> getYearlyRentStats(@RequestParam Long cityId,
@@ -71,7 +73,7 @@ public class PriceController {
 
     /**
      * Returns the average rent and deposit values per month of a specific Persian year for a city.
-     *
+     * <p>
      * This is useful for generating monthly trend charts. The result includes monthly values
      * for both rent and deposit. The keys in the returned map follow the "yyyy/MM" Persian format.
      *
@@ -80,8 +82,8 @@ public class PriceController {
      * @param groupCode    optional ad group code
      * @param categoryCode optional ad category code
      * @return a map where each key is a "yyyy/MM" string, and each value is another map containing:
-     *         - "rentValue": average monthly rent (in million tomans)
-     *         - "creditValue": average deposit (in billion tomans)
+     * - "rentValue": average monthly rent (in million tomans)
+     * - "creditValue": average deposit (in billion tomans)
      */
     @GetMapping("/rent/monthly")
     public Map<String, Map<String, Long>> getMonthlyRentStats(@RequestParam Long cityId,
@@ -100,18 +102,19 @@ public class PriceController {
      *
      * <p>Returned values are formatted as strings like "32.6" representing 32.6 billion tomans per m².</p>
      *
-     * @param cityId        the ID of the city (required)
-     * @param groupCode     optional ad group code (e.g., residential, commercial)
-     * @param categoryCode  optional ad category code (e.g., apartment, villa)
+     * @param cityId       the ID of the city (required)
+     * @param groupCode    optional ad group code (e.g., residential, commercial)
+     * @param categoryCode optional ad category code (e.g., apartment, villa)
      * @return a map where the key is the Persian year (e.g., "1400")
-     *         and the value is the average price per square meter (formatted as string, in billion tomans)
-     *
+     * and the value is the average price per square meter (formatted as string, in billion tomans)
      * @example GET /api/melksanj/price/sale/m2/yearly?cityId=1&groupCode=residential&categoryCode=apartment
      */
     @GetMapping("/sale/m2/yearly")
     public Map<String, String> getYearlyAveragePricePerSquareMeter(@RequestParam Long cityId,
                                                                    @RequestParam(required = false) String groupCode,
-                                                                   @RequestParam(required = false) String categoryCode) {
+                                                                   @RequestParam(required = false) String categoryCode,
+                                                                   @RequestParam(required = false) Integer region
+    ) {
         return priceService.getYearlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode);
     }
 
@@ -125,13 +128,12 @@ public class PriceController {
      *
      * <p>Returned values are formatted strings like "28.4", representing billion tomans per m².</p>
      *
-     * @param cityId        the ID of the city (required)
-     * @param year          the Gregorian year (e.g., 2024) used to extract ads in that year
-     * @param groupCode     optional ad group code (e.g., residential)
-     * @param categoryCode  optional ad category code (e.g., apartment)
+     * @param cityId       the ID of the city (required)
+     * @param year         the Gregorian year (e.g., 2024) used to extract ads in that year
+     * @param groupCode    optional ad group code (e.g., residential)
+     * @param categoryCode optional ad category code (e.g., apartment)
      * @return a map where the key is in "yyyy/MM" (Persian calendar format),
-     *         and the value is the average price per square meter (as a formatted string)
-     *
+     * and the value is the average price per square meter (as a formatted string)
      * @example GET /api/melksanj/price/sale/m2/monthly?cityId=1&year=2024&groupCode=residential
      */
     @GetMapping("/sale/m2/monthly")

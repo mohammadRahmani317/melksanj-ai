@@ -40,6 +40,11 @@
                     <select id="citySelect" class="w-full p-2 border rounded"></select>
                 </div>
 
+                <div id="regionFilter" class="w-1/3 min-w-[150px]" style="display: none;">
+                    <label class="block text-sm mb-1">منطقه</label>
+                    <select id="regionSelect" class="w-full p-2 border rounded"></select>
+                </div>
+
                 <!-- نوع کاربری ملک -->
                 <div class="w-1/3 min-w-[150px]">
                     <label class="block text-sm mb-1">نوع کاربری ملک</label>
@@ -74,9 +79,13 @@
             fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
             fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json())
         ]);
-        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
+        const tehranId = getTehranId(cities);
+
+        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, tehranId);
         fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
         fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, 'apartment');
+
+        await handleRegionVisibility(tehranId);
     }
 
     function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
@@ -92,7 +101,6 @@
             opt.value = item[valueKey];
             opt.textContent = item[textKey];
             select.appendChild(opt);
-
             if (defaultValue && item[valueKey] === defaultValue) {
                 opt.selected = true;
             }
@@ -104,10 +112,38 @@
         return tehran ? tehran.id : null;
     }
 
+    document.getElementById("citySelect").addEventListener("change", async function () {
+        const cityId = this.value;
+        await handleRegionVisibility(cityId);
+    });
+
+    async function handleRegionVisibility(cityId) {
+        const regionContainer = document.getElementById("regionFilter");
+        const regionSelect = document.getElementById("regionSelect");
+
+        if (!cityId || cityId !== getTehranId(await fetchCities())) {
+            regionContainer.style.display = "none";
+            regionSelect.innerHTML = "";
+            return;
+        }
+
+        regionContainer.style.display = "block";
+
+        const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`)
+            .then(r => r.json());
+
+        fillSelect(regionSelect, regions, "id", "name", true);
+    }
+
+    async function fetchCities() {
+        return await fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json());
+    }
+
     async function loadChart() {
         const cityId = document.getElementById("citySelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
+        const regionId = document.getElementById("regionSelect").value;
 
         if (!cityId) {
             alert("لطفاً یک شهر انتخاب کنید");
@@ -122,6 +158,7 @@
         let url = `http://localhost:8080/api/melksanj/price/sale/m2/yearly?cityId=${cityId}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
+        if (regionId) url += `&regionId=${regionId}`;
 
         try {
             const data = await fetch(url).then(r => r.json());
@@ -144,17 +181,17 @@
             Highcharts.chart('priceChart', {
                 chart: {
                     type: 'line',
-                    style: { fontFamily: 'Vazir, IRANSans, Tahoma' }
+                    style: {fontFamily: 'Vazir, IRANSans, Tahoma'}
                 },
                 title: {
                     text: 'میانگین قیمت فروش هر متر مربع در سال‌های مختلف'
                 },
                 xAxis: {
                     categories: years,
-                    title: { text: 'سال شمسی' }
+                    title: {text: 'سال شمسی'}
                 },
                 yAxis: {
-                    title: { text: 'قیمت هر متر مربع' },
+                    title: {text: 'قیمت هر متر مربع'},
                     labels: {
                         formatter: function () {
                             return formatDynamicUnit(this.value);
@@ -170,7 +207,7 @@
                     name: 'قیمت هر متر مربع',
                     data: values
                 }],
-                credits: { enabled: false },
+                credits: {enabled: false},
                 lang: {
                     loading: 'در حال بارگذاری...',
                     noData: 'داده‌ای برای نمایش وجود ندارد'

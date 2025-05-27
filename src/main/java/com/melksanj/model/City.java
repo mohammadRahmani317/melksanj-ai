@@ -17,4 +17,8 @@ public class City {
     private String name;
     @Column(length = 255)
     private String nameFa;
+
+    public City(Long id) {
+        this.id = id;
+    }
 }

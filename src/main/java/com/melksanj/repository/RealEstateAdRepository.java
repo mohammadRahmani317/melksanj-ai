@@ -18,14 +18,22 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                 WHERE r.city.id = :cityId
                 AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
                 AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                AND (:regionId IS NULL OR r.neighborhood.region = :regionId)
                 GROUP BY FUNCTION('YEAR', r.createdAtMonth)
                 ORDER BY FUNCTION('YEAR', r.createdAtMonth)
             """)
     List<Object[]> findYearlyAverageSalePrices(
             @Param("cityId") Long cityId,
             @Param("groupCodes") List<String> groupCodes,
-            @Param("categoryCodes") List<String> categoryCodes
+            @Param("categoryCodes") List<String> categoryCodes,
+            @Param("regionId") Integer regionId
     );
+
+    @Query("""
+            select r from RealEstateAd r where r.neighborhood.region= :regionId
+            """)
+    List<RealEstateAd> findByREl( @Param("regionId") Integer regionId);
+
 
     @Query("SELECT DISTINCT YEAR(r.createdAtMonth) FROM RealEstateAd r ORDER BY YEAR(r.createdAtMonth)")
     List<Integer> findDistinctYears();

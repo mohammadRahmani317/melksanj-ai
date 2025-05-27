@@ -20,11 +20,14 @@ public class PriceService {
     private final RealEstateAdRepository realEstateAdRepository;
     private final DecimalFormat decimalFormat = new DecimalFormat("#");
 
-    public Map<String, String> getYearlyAverageSalePrices(Long cityId, String groupCode, String categoryCode) {
+    public Map<String, String> getYearlyAverageSalePrices(Long cityId, String groupCode, String categoryCode, Integer regionId) {
+
+
         List<Object[]> rows = realEstateAdRepository.findYearlyAverageSalePrices(
                 cityId,
                 AdGroupEnum.fromCodeAndIsSell(groupCode, true),
-                AdCategoryEnum.fromCodeAndIsSell(categoryCode, true)
+                AdCategoryEnum.fromCodeAndIsSell(categoryCode, true),
+                regionId
         );
 
         Map<String, String> result = new TreeMap<>();
