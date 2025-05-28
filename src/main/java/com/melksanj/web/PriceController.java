@@ -46,8 +46,9 @@ public class PriceController {
     public Map<String, String> getMonthlyAverageSalePrices(@RequestParam Long cityId,
                                                            @RequestParam Integer year,
                                                            @RequestParam(required = false) String groupCode,
-                                                           @RequestParam(required = false) String categoryCode) {
-        return priceService.getMonthlyAverageSalePrices(cityId, groupCode, categoryCode, year);
+                                                           @RequestParam(required = false) String categoryCode,
+                                                           @RequestParam(required = false) Integer region) {
+        return priceService.getMonthlyAverageSalePrices(cityId, groupCode, categoryCode, year, region);
     }
 
 
@@ -67,8 +68,9 @@ public class PriceController {
     @GetMapping("/rent/yearly")
     public Map<String, Map<String, Long>> getYearlyRentStats(@RequestParam Long cityId,
                                                              @RequestParam(required = false) String groupCode,
-                                                             @RequestParam(required = false) String categoryCode) {
-        return priceService.getYearlyRentStats(cityId, groupCode, categoryCode);
+                                                             @RequestParam(required = false) String categoryCode,
+                                                             @RequestParam(required = false) Integer region) {
+        return priceService.getYearlyRentStats(cityId, groupCode, categoryCode, region);
     }
 
     /**
@@ -89,8 +91,9 @@ public class PriceController {
     public Map<String, Map<String, Long>> getMonthlyRentStats(@RequestParam Long cityId,
                                                               @RequestParam Integer year,
                                                               @RequestParam(required = false) String groupCode,
-                                                              @RequestParam(required = false) String categoryCode) {
-        return priceService.getMonthlyRentStats(cityId, year, groupCode, categoryCode);
+                                                              @RequestParam(required = false) String categoryCode,
+                                                              @RequestParam(required = false) Integer region) {
+        return priceService.getMonthlyRentStats(cityId, year, groupCode, categoryCode, region);
     }
 
     /**
@@ -115,7 +118,7 @@ public class PriceController {
                                                                    @RequestParam(required = false) String categoryCode,
                                                                    @RequestParam(required = false) Integer region
     ) {
-        return priceService.getYearlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode,region);
+        return priceService.getYearlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode, region);
     }
 
 
@@ -140,8 +143,9 @@ public class PriceController {
     public Map<String, String> getMonthlyAveragePricePerSquareMeter(@RequestParam Long cityId,
                                                                     @RequestParam Integer year,
                                                                     @RequestParam(required = false) String groupCode,
-                                                                    @RequestParam(required = false) String categoryCode) {
-        return priceService.getMonthlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode, year);
+                                                                    @RequestParam(required = false) String categoryCode,
+                                                                    @RequestParam(required = false) Integer region) {
+        return priceService.getMonthlyAveragePricePerSquareMeter(cityId, groupCode, categoryCode, year, region);
     }
 
 }

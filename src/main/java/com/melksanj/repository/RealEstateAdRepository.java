@@ -16,17 +16,17 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                 SELECT FUNCTION('YEAR', r.createdAtMonth), AVG(r.priceValue)
                 FROM RealEstateAd r
                 WHERE r.city.id = :cityId
+                AND r.priceValue IS NOT NULL AND r.priceValue >10000
                 AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
                 AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
-                AND (:regionId IS NULL OR r.neighborhood.region = :regionId)
+                AND (:region IS NULL OR r.neighborhood.region = :region)
                 GROUP BY FUNCTION('YEAR', r.createdAtMonth)
                 ORDER BY FUNCTION('YEAR', r.createdAtMonth)
             """)
-    List<Object[]> findYearlyAverageSalePrices(
-            @Param("cityId") Long cityId,
-            @Param("groupCodes") List<String> groupCodes,
-            @Param("categoryCodes") List<String> categoryCodes,
-            @Param("regionId") Integer regionId
+    List<Object[]> findYearlyAverageSalePrices(@Param("cityId") Long cityId,
+                                               @Param("groupCodes") List<String> groupCodes,
+                                               @Param("categoryCodes") List<String> categoryCodes,
+                                               @Param("region") Integer region
     );
 
     @Query("SELECT DISTINCT YEAR(r.createdAtMonth) FROM RealEstateAd r ORDER BY YEAR(r.createdAtMonth)")
@@ -36,8 +36,10 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
              SELECT FUNCTION('MONTH', r.createdAtMonth), AVG(r.priceValue)
              FROM RealEstateAd r
              WHERE r.city.id = :cityId
+             AND r.priceValue IS NOT NULL AND r.priceValue >10000
              AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
              AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+             AND (:region IS NULL OR r.neighborhood.region = :region)
              AND FUNCTION('YEAR', r.createdAtMonth) = :year
              GROUP BY FUNCTION('MONTH', r.createdAtMonth)
              ORDER BY FUNCTION('MONTH', r.createdAtMonth)
@@ -45,7 +47,8 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
     List<Object[]> findMonthlyAverageSalePrices(@Param("cityId") Long cityId,
                                                 @Param("groupCodes") List<String> groupCodes,
                                                 @Param("categoryCodes") List<String> categoryCodes,
-                                                @Param("year") int year);
+                                                @Param("year") int year,
+                                                @Param("region") Integer region);
 
     @Query("""
                 SELECT FUNCTION('YEAR', r.createdAtMonth) as year,
@@ -55,14 +58,14 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                 WHERE r.city.id = :cityId
                   AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
                   AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                  AND (:region IS NULL OR r.neighborhood.region = :region)
                 GROUP BY FUNCTION('YEAR', r.createdAtMonth)
                 ORDER BY FUNCTION('YEAR', r.createdAtMonth)
             """)
-    List<Object[]> findYearlyAverageRentAndCredit(
-            @Param("cityId") Long cityId,
-            @Param("groupCodes") List<String> groupCodes,
-            @Param("categoryCodes") List<String> categoryCodes
-    );
+    List<Object[]> findYearlyAverageRentAndCredit(@Param("cityId") Long cityId,
+                                                  @Param("groupCodes") List<String> groupCodes,
+                                                  @Param("categoryCodes") List<String> categoryCodes,
+                                                  @Param("region") Integer region);
 
     @Query("""
              SELECT FUNCTION('MONTH', r.createdAtMonth) as month,
@@ -73,14 +76,15 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                AND FUNCTION('YEAR', r.createdAtMonth) = :year
                AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
                AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+               AND (:region IS NULL OR r.neighborhood.region = :region)
              GROUP BY FUNCTION('MONTH', r.createdAtMonth)
              ORDER BY FUNCTION('MONTH', r.createdAtMonth)
             """)
-    List<Object[]> findMonthlyAverageRentAndCredit(
-            @Param("cityId") Long cityId,
-            @Param("year") Integer year,
-            @Param("groupCodes") List<String> groupCodes,
-            @Param("categoryCodes") List<String> categoryCodes
+    List<Object[]> findMonthlyAverageRentAndCredit(@Param("cityId") Long cityId,
+                                                   @Param("year") Integer year,
+                                                   @Param("groupCodes") List<String> groupCodes,
+                                                   @Param("categoryCodes") List<String> categoryCodes,
+                                                   @Param("region") Integer region
     );
 
 
@@ -88,19 +92,18 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                         SELECT FUNCTION('YEAR', r.createdAtMonth), AVG(r.priceValue / r.buildingSize)
                                     FROM RealEstateAd r
                                     WHERE r.city.id = :cityId
-                                      AND r.priceValue IS NOT NULL
+                                      AND r.priceValue IS NOT NULL AND r.priceValue >10000
                                       AND r.buildingSize IS NOT NULL AND r.buildingSize > 10
                                       AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
                                       AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
-                                      AND (:regionId IS NULL OR r.neighborhood.region = :regionId)
+                                      AND (:region IS NULL OR r.neighborhood.region = :region)
                                     GROUP BY FUNCTION('YEAR', r.createdAtMonth)
                                     ORDER BY FUNCTION('YEAR', r.createdAtMonth)
             """)
-    List<Object[]> findYearlyAveragePricePerSquareMeter(
-            @Param("cityId") Long cityId,
-            @Param("groupCodes") List<String> groupCodes,
-            @Param("categoryCodes") List<String> categoryCodes,
-            @Param("regionId") Integer regionId
+    List<Object[]> findYearlyAveragePricePerSquareMeter(@Param("cityId") Long cityId,
+                                                        @Param("groupCodes") List<String> groupCodes,
+                                                        @Param("categoryCodes") List<String> categoryCodes,
+                                                        @Param("region") Integer region
     );
 
 
@@ -109,18 +112,19 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                 FROM RealEstateAd r
                 WHERE r.city.id = :cityId
                   AND FUNCTION('YEAR', r.createdAtMonth) = :year
-                  AND r.priceValue IS NOT NULL
+                  AND r.priceValue IS NOT NULL AND r.priceValue >10000
                   AND r.buildingSize IS NOT NULL AND r.buildingSize > 10
                   AND (:groupCodes IS NULL OR r.adGroup.code IN :groupCodes)
                   AND (:categoryCodes IS NULL OR r.adCategory.code IN :categoryCodes)
+                  AND (:region IS NULL OR r.neighborhood.region = :region)
                 GROUP BY FUNCTION('MONTH', r.createdAtMonth)
                 ORDER BY FUNCTION('MONTH', r.createdAtMonth)
             """)
-    List<Object[]> findMonthlyAveragePricePerSquareMeter(
-            @Param("cityId") Long cityId,
-            @Param("groupCodes") List<String> groupCodes,
-            @Param("categoryCodes") List<String> categoryCodes,
-            @Param("year") int year
+    List<Object[]> findMonthlyAveragePricePerSquareMeter(@Param("cityId") Long cityId,
+                                                         @Param("groupCodes") List<String> groupCodes,
+                                                         @Param("categoryCodes") List<String> categoryCodes,
+                                                         @Param("year") int year,
+                                                         @Param("region") Integer region
     );
 
 }

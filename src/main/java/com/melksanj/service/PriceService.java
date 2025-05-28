@@ -39,12 +39,13 @@ public class PriceService {
         return result;
     }
 
-    public Map<String, String> getMonthlyAverageSalePrices(Long cityId, String groupCode, String categoryCode, Integer year) {
+    public Map<String, String> getMonthlyAverageSalePrices(Long cityId, String groupCode, String categoryCode, Integer year, Integer region) {
         List<Object[]> rows = realEstateAdRepository.findMonthlyAverageSalePrices(
                 cityId,
                 AdGroupEnum.fromCodeAndIsSell(groupCode, true),
                 AdCategoryEnum.fromCodeAndIsSell(categoryCode, true),
-                year
+                year,
+                region
         );
 
         Map<String, String> result = new TreeMap<>();
@@ -56,11 +57,12 @@ public class PriceService {
         return result;
     }
 
-    public Map<String, Map<String, Long>> getYearlyRentStats(Long cityId, String groupCode, String categoryCode) {
+    public Map<String, Map<String, Long>> getYearlyRentStats(Long cityId, String groupCode, String categoryCode, Integer region) {
         List<Object[]> rows = realEstateAdRepository.findYearlyAverageRentAndCredit(
                 cityId,
                 AdGroupEnum.fromCodeAndIsSell(groupCode, false),
-                AdCategoryEnum.fromCodeAndIsSell(categoryCode, false)
+                AdCategoryEnum.fromCodeAndIsSell(categoryCode, false),
+                region
         );
 
         Map<String, Map<String, Long>> result = new TreeMap<>();
@@ -71,12 +73,13 @@ public class PriceService {
         return result;
     }
 
-    public Map<String, Map<String, Long>> getMonthlyRentStats(Long cityId, Integer year, String groupCode, String categoryCode) {
+    public Map<String, Map<String, Long>> getMonthlyRentStats(Long cityId, Integer year, String groupCode, String categoryCode,Integer region) {
         List<Object[]> rows = realEstateAdRepository.findMonthlyAverageRentAndCredit(
                 cityId,
                 year,
                 AdGroupEnum.fromCodeAndIsSell(groupCode, false),
-                AdCategoryEnum.fromCodeAndIsSell(categoryCode, false)
+                AdCategoryEnum.fromCodeAndIsSell(categoryCode, false),
+                region
         );
 
         Map<String, Map<String, Long>> result = new TreeMap<>();
@@ -104,12 +107,13 @@ public class PriceService {
         return result;
     }
 
-    public Map<String, String> getMonthlyAveragePricePerSquareMeter(Long cityId, String groupCode, String categoryCode, Integer year) {
+    public Map<String, String> getMonthlyAveragePricePerSquareMeter(Long cityId, String groupCode, String categoryCode, Integer year, Integer region) {
         List<Object[]> rows = realEstateAdRepository.findMonthlyAveragePricePerSquareMeter(
                 cityId,
                 AdGroupEnum.fromCodeAndIsSell(groupCode, true),
                 AdCategoryEnum.fromCodeAndIsSell(categoryCode, true),
-                year
+                year,
+                region
         );
 
         Map<String, String> result = new TreeMap<>();

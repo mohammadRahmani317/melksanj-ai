@@ -28,23 +28,29 @@
 
 <main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش (ماهیانه)</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش (ماهانه)</h2>
 
         <!-- فیلترها -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
-            <!-- فیلترهای اصلی -->
             <div class="bg-white p-6 rounded-lg shadow-sm border">
                 <div>
                     <label class="block text-sm mb-1">شهر</label>
                     <select id="citySelect" class="w-full p-2 border rounded mb-4"></select>
                 </div>
+
+                <div>
+                    <label class="block text-sm mb-1">منطقه</label>
+                    <select id="regionSelect" class="w-full p-2 border rounded mb-4">
+                        <option value="">همه</option>
+                    </select>
+                </div>
+
                 <div>
                     <label class="block text-sm mb-1">سال</label>
                     <select id="yearSelect" class="w-full p-2 border rounded"></select>
                 </div>
             </div>
 
-            <!-- فیلترهای پیشرفته -->
             <div class="bg-white p-6 rounded-lg shadow-sm border">
 
                 <div>
@@ -84,12 +90,32 @@
 
             fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
             fillSelect(document.getElementById("groupSelect"), groups, "code", "title", true, "residential");
-            fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true,"apartment");
+            fillSelect(document.getElementById("categorySelect"), categories, "code", "title", true, "apartment");
             fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
+
+            document.getElementById("citySelect").addEventListener("change", handleCityChange);
+            await handleCityChange();
         } catch (error) {
             console.log("خطا در بارگذاری داده‌ها: ");
         }
     }
+
+    async function handleCityChange() {
+        const citySelect = document.getElementById("citySelect");
+        const cityId = citySelect.value;
+        const cityName = citySelect.options[citySelect.selectedIndex].text;
+        const regionSelect = document.getElementById("regionSelect");
+
+        if (cityName.includes("تهران")) {
+            const regions = await fetch(`http://localhost:8080/api/melksanj/base/regions?cityId=${cityId}`).then(r => r.json());
+            fillSelect(regionSelect, regions, "id", "name", true);
+            regionSelect.disabled = false;
+        } else {
+            regionSelect.innerHTML = "";
+            regionSelect.disabled = true;
+        }
+    }
+
 
     function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
         select.innerHTML = "";
@@ -122,6 +148,7 @@
         const year = document.getElementById("yearSelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
+        const region = document.getElementById("regionSelect").value;
 
         if (!cityId || !year) {
             alert("لطفاً شهر و سال را انتخاب کنید");
@@ -133,6 +160,7 @@
         let url = `http://localhost:8080/api/melksanj/price/sale/monthly?cityId=${cityId}&year=${year}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
+        if (region) url += `&region=${region}`;
 
         try {
             const response = await fetch(url);

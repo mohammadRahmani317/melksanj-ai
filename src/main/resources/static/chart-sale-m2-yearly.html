@@ -29,7 +29,7 @@
 <!-- Main -->
 <main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش هر متر مربع (سالیانه)</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار میانگین قیمت فروش هر متر مربع (سالانه)</h2>
 
         <!-- فیلترها -->
         <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
@@ -133,7 +133,7 @@
         const cityId = document.getElementById("citySelect").value;
         const groupCode = document.getElementById("groupSelect").value;
         const categoryCode = document.getElementById("categorySelect").value;
-        const regionId = document.getElementById("regionSelect").value;
+        const region = document.getElementById("regionSelect").value;
 
         if (!cityId) {
             alert("لطفاً یک شهر انتخاب کنید");
@@ -148,7 +148,7 @@
         let url = `http://localhost:8080/api/melksanj/price/sale/m2/yearly?cityId=${cityId}`;
         if (groupCode) url += `&groupCode=${groupCode}`;
         if (categoryCode) url += `&categoryCode=${categoryCode}`;
-        if (regionId) url += `&regionId=${regionId}`;
+        if (region) url += `&region=${region}`;
 
         try {
             const data = await fetch(url).then(r => r.json());
