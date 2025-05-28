@@ -127,4 +127,19 @@ public interface RealEstateAdRepository extends JpaRepository<RealEstateAd, Long
                                                          @Param("region") Integer region
     );
 
+    @Query("""
+    SELECT n.nameFa, FUNCTION('YEAR', a.createdAtMonth), AVG(a.priceValue / a.buildingSize)
+    FROM RealEstateAd a
+    JOIN a.neighborhood n
+    WHERE a.city.id = :cityId
+      AND a.priceValue > 0 AND a.buildingSize > 0
+      AND (:groupCode IS NULL OR a.adGroup = :groupCode)
+      AND (:categoryCode IS NULL OR a.adCategory = :categoryCode)
+    GROUP BY n.nameFa, FUNCTION('YEAR', a.createdAtMonth)
+    ORDER BY n.nameFa, FUNCTION('YEAR', a.createdAtMonth)
+""")
+    List<Object[]> getYearlyAveragePricePerRegion(@Param("cityId") Long cityId,
+                                                  @Param("groupCode") String groupCode,
+                                                  @Param("categoryCode") String categoryCode);
+
 }
