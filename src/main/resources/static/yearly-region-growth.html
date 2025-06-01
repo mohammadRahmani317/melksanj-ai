@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نمودار رشد قیمت منطقه‌ای سالانه</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        body {
+            font-family: "Vazir", "IRANSans", "Tahoma", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+<header class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-lg font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
+        <nav class="space-x-2 space-x-reverse">
+            <a href="index.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">خانه</a>
+            <a href="analytics.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">نمودارهای تحلیلی</a>
+            <a href="predict.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">تخمین قیمت</a>
+        </nav>
+    </div>
+</header>
+
+<main class="flex-grow px-4 py-10">
+    <div class="max-w-6xl mx-auto">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نرخ رشد قیمت منطقه‌ای (سالانه)</h2>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+            <div class="flex flex-nowrap gap-6 flex-wrap">
+                <!-- شهر -->
+                <div class="w-1/4 min-w-[150px]">
+                    <label class="block text-sm mb-1">شهر</label>
+                    <select id="citySelect" class="w-full p-2 border rounded"></select>
+                </div>
+
+                <!-- نوع کاربری ملک -->
+                <div class="w-1/4 min-w-[150px]">
+                    <label class="block text-sm mb-1">نوع کاربری ملک</label>
+                    <select id="groupSelect" class="w-full p-2 border rounded"></select>
+                </div>
+
+                <!-- نوع ملک -->
+                <div class="w-1/4 min-w-[150px]">
+                    <label class="block text-sm mb-1">نوع ملک</label>
+                    <select id="categorySelect" class="w-full p-2 border rounded"></select>
+                </div>
+
+                <!-- سال -->
+                <div class="w-1/4 min-w-[150px]">
+                    <label class="block text-sm mb-1">سال (اجباری)</label>
+                    <select id="yearSelect" class="w-full p-2 border rounded" required></select>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="loadChart()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mb-6">
+            نمایش نمودار
+        </button>
+        <div id="growthChart" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200"></div>
+        <!--        <div id="growthChart" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 min-h-[400px]"></div>-->
+    </div>
+</main>
+
+<footer class="bg-white border-t border-gray-200 text-center py-4 text-sm text-gray-500 mt-10">
+    داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند.
+</footer>
+
+<script>
+
+    let miladiToShamsiMap = {};
+
+    async function fetchFilterData() {
+        const [years, cities, groups, categories] = await Promise.all([
+            fetch('http://localhost:8080/api/melksanj/base/years').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json()),
+        ]);
+
+        // پر کردن نگاشت میلادی به شمسی
+        years.forEach(y => {
+            miladiToShamsiMap[y.miladi] = y.shamsi;
+        });
+
+        fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
+        const tehranOnly = cities.find(city => city.nameFa === 'تهران');
+        fillSelect(document.getElementById("citySelect"), [tehranOnly], "id", "nameFa", false, tehranOnly.id);
+        fillSelect(document.getElementById("groupSelect"), groups, "code", "title");
+        fillSelect(document.getElementById("categorySelect"), categories, "code", "title");
+
+    }
+
+    function fillSelect(select, data, valueKey, textKey) {
+        select.innerHTML = "";
+        data.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item[valueKey];
+            opt.textContent = item[textKey];
+            select.appendChild(opt);
+        });
+    }
+
+    async function loadChart() {
+        const year = document.getElementById("yearSelect").value;
+        const cityId = document.getElementById("citySelect").value;
+        const groupCode = document.getElementById("groupSelect").value;
+        const categoryCode = document.getElementById("categorySelect").value;
+
+        if (!year) {
+            alert("لطفا سال را انتخاب کنید");
+            return;
+        }
+
+        let url = `http://localhost:8080/api/melksanj/region/growth/yearly?cityId=${cityId}&year=${year}`;
+        if (groupCode) url += `&groupCode=${groupCode}`;
+        if (categoryCode) url += `&categoryCode=${categoryCode}`;
+
+        try {
+            const data = await fetch(url).then(r => r.json());
+
+            // داده به شکل: { "1402": { "منطقه 1": "191", "منطقه 2": "117", ... } }
+            const miladiYear = document.getElementById("yearSelect").value;
+            const shamsiYear = miladiToShamsiMap[miladiYear];
+
+            console.log(shamsiYear)
+
+
+            const yearData = data[shamsiYear];
+            if (!yearData) {
+                alert("داده‌ای برای این سال موجود نیست");
+                return;
+            }
+
+            const regions = Object.keys(yearData);
+            const growthRates = regions.map(region => parseFloat(yearData[region]));
+
+            Highcharts.chart('growthChart', {
+                chart: {type: 'bar', style: {fontFamily: 'Vazir, IRANSans, Tahoma'}},
+                title: {text: `نرخ رشد قیمت منطقه‌ای در سال ${shamsiYear}`},
+                xAxis: {
+                    categories: regions,
+                    title: {text: 'منطقه'}
+                },
+                yAxis: {
+                    title: {text: 'درصد رشد قیمت'},
+                    labels: {
+                        formatter: function () {
+                            return this.value + '%';
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormatter: function () {
+                        return `<b>${this.y}%</b>`;
+                    }
+                },
+                series: [{
+                    name: `رشد قیمت مناطق در ${shamsiYear}`,
+                    data: growthRates,
+                    color: '#3b82f6'
+                }],
+                credits: {enabled: false},
+                lang: {noData: 'داده‌ای برای نمایش وجود ندارد'},
+                noData: {style: {fontWeight: 'bold', fontSize: '16px', color: '#666666'}}
+            });
+
+        } catch (error) {
+            console.error("خطا در دریافت داده‌ها:", error);
+            alert('خطا در دریافت داده‌ها از سرور');
+        }
+    }
+
+    window.onload = fetchFilterData;
+</script>
+
+</body>
+</html>

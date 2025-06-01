@@ -17,10 +17,17 @@ public class RegionController {
     private final RegionService regionService;
 
     @GetMapping("/growth/yearly")
-    public Map<String, Map<String, Double>> getYearlySalePriceGrowthByRegion(
-            @RequestParam Long cityId,
-            @RequestParam(required = false) String groupCode,
-            @RequestParam(required = false) String categoryCode) {
-        return regionService.getYearlySalePriceGrowthByRegion(cityId, groupCode, categoryCode);
+    public Map<String, Map<String, String>> getYearlyPriceGrowthStats(@RequestParam Long cityId,
+                                                                      @RequestParam(required = false) String groupCode,
+                                                                      @RequestParam(required = false) String categoryCode,
+                                                                      @RequestParam Integer year) {
+        return regionService.getYearlyGrowthRateByRegion(cityId, groupCode, categoryCode, year);
+    }
+
+    @GetMapping("/distribution")
+    public Map<Integer, Map<String, Object>> getRegionDistribution(@RequestParam Long cityId,
+                                                                @RequestParam(required = false) String groupCode,
+                                                                @RequestParam(required = false) String categoryCode) {
+        return regionService.getRegionDistribution(cityId, groupCode, categoryCode);
     }
 }

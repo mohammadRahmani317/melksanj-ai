@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>نقشه حرارتی منطقه‌ای تهران با رنگ‌های متنوع</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            crossorigin=""
+    />
+
+    <style>
+        body {
+            font-family: "Vazir", "IRANSans", "Tahoma", sans-serif;
+        }
+        #map {
+            height: 600px;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 8px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+<header class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-lg font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
+        <nav class="space-x-2 space-x-reverse">
+            <a href="index.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">خانه</a>
+            <a href="analytics.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">نمودارهای تحلیلی</a>
+            <a href="predict.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">تخمین قیمت</a>
+        </nav>
+    </div>
+</header>
+
+<main class="flex-grow px-4 py-10 max-w-6xl mx-auto w-full">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">نقشه حرارتی منطقه‌ای تهران</h2>
+
+    <div id="map"></div>
+</main>
+
+<footer class="bg-white border-t border-gray-200 text-center py-4 text-sm text-gray-500 mt-10">
+    داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند.
+</footer>
+
+<script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        crossorigin=""
+></script>
+
+<script>
+    // مرکز و زوم نقشه روی تهران
+    const map = L.map('map').setView([35.72, 51.40], 11);
+
+    // لایه زمینه (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // تابع رنگ‌دهی با گرادیان از سبز (کم) تا قرمز (زیاد)
+    function getColor(value) {
+        return value > 14 ? '#d73027' :  // قرمز تیره
+            value > 12 ? '#fc8d59' :
+                value > 10 ? '#fee08b' :
+                    value > 7 ? '#d9ef8b' :
+                        value > 4 ? '#91cf60' :
+                            '#1a9850';  // سبز تیره
+    }
+
+    // آدرس API بک‌اند که داده رشد قیمت رو میده
+    const apiUrl = 'http://localhost:8080/api/melksanj/region/growth/yearly?cityId=1&year=1402';
+
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+            const lastYearKey = Object.keys(data)[0];
+            const growthData = data[lastYearKey];
+
+            console.log('Received growth data:', growthData);
+
+            const growthValues = growthData;
+
+            fetch('http://localhost:8080/tehran-areas-22-polygon.geojson')
+                .then(res => res.json())
+                .then(geojson => {
+
+                    function style(feature) {
+                        const regionName = feature.properties.name || feature.properties.Name || "نامشخص";
+                        let growthStr = growthValues[regionName];
+
+                        if (growthStr === undefined) {
+                            console.warn(`Growth data missing for region: ${regionName}`);
+                            growthStr = "0%";
+                        }
+
+                        const value = parseFloat(growthStr.replace('%', '').trim()) || 0;
+
+                        return {
+                            fillColor: getColor(value),
+                            weight: 2,
+                            opacity: 1,
+                            color: 'white',
+                            dashArray: '3',
+                            fillOpacity: value > 0 ? 0.8 : 0.3
+                        };
+                    }
+
+                    function onEachFeature(feature, layer) {
+                        const regionName = feature.properties.name || feature.properties.Name || "نامشخص";
+                        const growthStr = growthValues[regionName] || "0%";
+                        layer.bindPopup(`<b>${regionName}</b><br>رشد قیمت: ${growthStr}`);
+                    }
+
+                    L.geoJSON(geojson, {
+                        style: style,
+                        onEachFeature: onEachFeature
+                    }).addTo(map);
+                });
+        })
+        .catch(e => {
+            alert('خطا در بارگذاری داده‌ها: ' + e.message);
+            console.error(e);
+        });
+
+</script>
+
+
+</body>
+</html>

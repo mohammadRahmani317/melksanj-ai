@@ -1,5 +1,8 @@
 package com.melksanj.service;
 
+import com.melksanj.common.DateUtils;
+import com.melksanj.constants.AdCategoryEnum;
+import com.melksanj.constants.AdGroupEnum;
 import com.melksanj.repository.RealEstateAdRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,44 +12,92 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class RegionService {
+
     private final RealEstateAdRepository realEstateAdRepository;
 
-    public Map<String, Map<String, Double>> getYearlySalePriceGrowthByRegion(Long cityId, String groupCode, String categoryCode) {
-        List<Object[]> rawData = realEstateAdRepository.getYearlyAveragePricePerRegion(cityId, groupCode, categoryCode);
+    public Map<String, Map<String, String>> getYearlyGrowthRateByRegion(Long cityId,
+                                                                        String groupCode,
+                                                                        String categoryCode,
+                                                                        Integer year) {
 
-        // rawData => [regionName, year, avgPrice]
-        Map<String, TreeMap<Integer, Double>> regionYearPriceMap = new HashMap<>();
+        List<Object[]> rows = realEstateAdRepository.findYearlyAveragePricePerSquareMeterGroupedByRegionBetweenYears(
+                cityId,
+                AdGroupEnum.fromCodeAndIsSell(groupCode, true),
+                AdCategoryEnum.fromCodeAndIsSell(categoryCode, true),
+                year - 1,
+                year
+        );
 
-        for (Object[] row : rawData) {
-            String region = (String) row[0];
-            Integer year = ((Number) row[1]).intValue();
-            Double avgPrice = ((Number) row[2]).doubleValue();
+//        List<Object[]> rows = new ArrayList<>();
+//        rows.add(new Object[]{1, year - 1, 100.0});
+//        rows.add(new Object[]{1, year, 120.0});
+//        rows.add(new Object[]{2, year - 1, 200.0});
+//        rows.add(new Object[]{2, year, 210.0});
+//        rows.add(new Object[]{3, year - 1, 150.0});
+//        rows.add(new Object[]{3, year, 150.0});
 
-            regionYearPriceMap
-                    .computeIfAbsent(region, k -> new TreeMap<>())
-                    .put(year, avgPrice);
+        Map<Integer, Map<Integer, Double>> pricesByYearAndRegion = new HashMap<>();
+
+        for (Object[] row : rows) {
+            Integer regionId = (Integer) row[0];
+            Integer rowYear = (Integer) row[1];
+            Double avgPrice = (Double) row[2];
+
+            pricesByYearAndRegion
+                    .computeIfAbsent(rowYear, y -> new HashMap<>())
+                    .put(regionId, avgPrice);
         }
 
-        // Calculate growth rate
-        Map<String, Map<String, Double>> result = new LinkedHashMap<>();
-        for (Map.Entry<String, TreeMap<Integer, Double>> entry : regionYearPriceMap.entrySet()) {
-            String region = entry.getKey();
-            TreeMap<Integer, Double> yearPrice = entry.getValue();
+        Map<String, Map<String, String>> growthResult = new TreeMap<>();
+        String yearShamsi = DateUtils.toPersianYear(year);
+        Map<String, String> regionGrowthMap = new TreeMap<>();
 
-            Map<String, Double> growthPerYear = new LinkedHashMap<>();
-            Double lastPrice = null;
-            for (Map.Entry<Integer, Double> yp : yearPrice.entrySet()) {
-                Integer year = yp.getKey();
-                Double price = yp.getValue();
+        Map<Integer, Double> currentYearPrices = pricesByYearAndRegion.getOrDefault(year, Collections.emptyMap());
+        Map<Integer, Double> prevYearPrices = pricesByYearAndRegion.getOrDefault(year - 1, Collections.emptyMap());
 
-                double growth = (lastPrice != null && lastPrice > 0) ? (price - lastPrice) / lastPrice : 0;
-                growthPerYear.put(String.valueOf(year + 621), growth); // تبدیل سال شمسی به میلادی
+        for (Map.Entry<Integer, Double> entry : currentYearPrices.entrySet()) {
+            Integer regionId = entry.getKey();
+            Double currentPrice = entry.getValue();
+            Double prevPrice = prevYearPrices.get(regionId);
 
-                lastPrice = price;
+            if (prevPrice == null || prevPrice == 0) {
+                continue;
             }
 
-            result.put(region, growthPerYear);
+            double growthRate = (currentPrice - prevPrice) / prevPrice * 100;
+            String regionName = (regionId == null || regionId == 0) ? "نامشخص" : "منطقه " + regionId;
+            String growthStr = String.format("%.2f%%", growthRate);
+
+            regionGrowthMap.put(regionName, growthStr);
         }
+
+        growthResult.put(yearShamsi, regionGrowthMap);
+
+        return growthResult;
+    }
+
+    public Map<Integer, Map<String, Object>> getRegionDistribution(Long cityId, String groupCode, String categoryCode) {
+
+        List<Object[]> rows = realEstateAdRepository.findRegionDistributionGroupedByRegionAndYear(
+                cityId,
+                AdGroupEnum.fromCodeAndIsSell(groupCode, true),
+                AdCategoryEnum.fromCodeAndIsSell(categoryCode, true)
+        );
+
+        Map<Integer, Map<String, Object>> result = new LinkedHashMap<>();
+
+        for (Object[] row : rows) {
+            Integer regionId = (Integer) row[0];
+            Long count = (Long) row[1];
+
+            Map<String, Object> inner = new HashMap<>();
+            inner.put("name", "منطقه" + regionId);
+            inner.put("count", count);
+            result.put(regionId, inner);
+        }
+
         return result;
     }
+
+
 }

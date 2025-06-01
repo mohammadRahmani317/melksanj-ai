@@ -1,32 +1,224 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نمودار قیمت املاک</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>نمودار توزیع آگهی‌ها در مناطق</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        body {
+            font-family: "Vazir", "IRANSans", "Tahoma", sans-serif;
+        }
+    </style>
 </head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
 
-<!-- Header -->
-<header class="bg-white shadow sticky top-0 z-10">
+<header class="bg-white shadow-sm">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
+        <h1 class="text-lg font-bold text-gray-800">سامانه تحلیل قیمت املاک</h1>
         <nav class="space-x-2 space-x-reverse">
-            <a href="index.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">خانه</a>
-            <a href="analytics.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">نمودارهای تحلیلی</a>
-            <a href="predict.html" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">تخمین قیمت ملک با هوش مصنوعی</a>
+            <a href="index.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">خانه</a>
+            <a href="analytics.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">نمودارهای تحلیلی</a>
+            <a href="predict.html" class="text-gray-700 hover:text-blue-600 px-4 py-2">تخمین قیمت</a>
         </nav>
     </div>
 </header>
 
-
-<!-- Footer (مثل index.html) -->
-<footer class="bg-gray-800 text-white py-4 mt-10 w-full text-center" style="position: fixed; bottom: 0; left: 0;">
+<main class="flex-grow px-4 py-10">
     <div class="max-w-6xl mx-auto">
-        <p class="text-sm">
-            داده‌های این سایت بر اساس آگهی‌های املاک منتشر شده در دیوار است. تمامی حقوق مربوط به این داده‌ها متعلق به دیوار است.
-        </p>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">نمودار توزیع تعداد آگهی در مناطق</h2>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+            <div class="flex flex-nowrap gap-6">
+                <div class="w-1/3 min-w-[150px]">
+                    <label class="block text-sm mb-1">شهر</label>
+                    <select id="citySelect" class="w-full p-2 border rounded"></select>
+                </div>
+                <div class="w-1/3 min-w-[150px]">
+                    <label class="block text-sm mb-1">نوع کاربری ملک</label>
+                    <select id="groupSelect" class="w-full p-2 border rounded"></select>
+                </div>
+                <div class="w-1/3 min-w-[150px]">
+                    <label class="block text-sm mb-1">نوع ملک</label>
+                    <select id="categorySelect" class="w-full p-2 border rounded"></select>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="loadChart()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mb-6">
+            نمایش نمودار
+        </button>
+
+        <div id="regionChart" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200"></div>
     </div>
+</main>
+
+<footer class="bg-white border-t border-gray-200 text-center py-4 text-sm text-gray-500 mt-10">
+    داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند.
 </footer>
 
+<script>
+    async function fetchData() {
+        const [cities, groups, categories] = await Promise.all([
+            fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
+            fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json())
+        ]);
+
+        fillSelect(document.getElementById("citySelect"), cities, "id", "nameFa", false, getTehranId(cities));
+        fillSelect(document.getElementById("groupSelect"), groups, "code", "title", false, "residential");
+        fillSelect(document.getElementById("categorySelect"), categories, "code", "title", false, "apartment");
+    }
+
+    function fillSelect(select, data, valueKey, textKey, addAll = false, defaultValue = null) {
+        select.innerHTML = "";
+        if (addAll) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "همه";
+            select.appendChild(opt);
+        }
+        data.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item[valueKey];
+            opt.textContent = item[textKey];
+            select.appendChild(opt);
+            if (defaultValue && item[valueKey] === defaultValue) {
+                opt.selected = true;
+            }
+        });
+    }
+
+    function getTehranId(cities) {
+        const tehran = cities.find(c => c.nameFa === "تهران" || c.nameFa.includes("تهران"));
+        return tehran ? tehran.id : null;
+    }
+
+    async function loadChart() {
+        const cityId = document.getElementById("citySelect").value;
+        const groupCode = document.getElementById("groupSelect").value;
+        const categoryCode = document.getElementById("categorySelect").value;
+
+        if (!cityId) {
+            alert("لطفاً یک شهر انتخاب کنید");
+            return;
+        }
+
+        let url = `http://localhost:8080/api/melksanj/region/distribution?cityId=${cityId}`;
+        if (groupCode) url += `&groupCode=${groupCode}`;
+        if (categoryCode) url += `&categoryCode=${categoryCode}`;
+
+        try {
+            const rawData = await fetch(url).then(r => r.json());
+
+            // 🟢 تبدیل Map به آرایه برای Highcharts
+            const entries = Object.values(rawData); // چون map از نوع { "1": {...}, "2": {...} } هست
+
+            const regionNames = entries.map(item => item.name);
+            const adCounts = entries.map(item => item.count);
+
+            Highcharts.chart('regionChart', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'توزیع تعداد آگهی‌ها در مناطق',
+                    style: {
+                        fontSize: '18px',
+                        fontFamily: 'Vazir, Tahoma, sans-serif'
+                    }
+                },
+                xAxis: {
+                    categories: regionNames,
+                    title: {
+                        text: 'منطقه'
+                    },
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Vazir, IRANSans, Tahoma, sans-serif'
+                        }
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'تعداد آگهی‌ها',
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Vazir, IRANSans, Tahoma, sans-serif'
+                        }
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                tooltip: {
+                    useHTML: true,
+                    backgroundColor: '#ffffff',
+                    borderColor: '#ccc',
+                    style: {
+                        fontSize: '13px',
+                        fontFamily: 'Vazir, IRANSans, Tahoma, sans-serif'
+                    },
+                    formatter: function () {
+                        return `<b>📍 ${this.key}</b><br>📊 <span style="color:#2c3e50">تعداد آگهی:</span> <b>${this.y}</b>`;
+                    }
+                },
+                series: [{
+                    name: 'تعداد آگهی',
+                    colorByPoint: true,
+                    groupPadding: 0,
+                    colors: [
+                        '#9b20d9', '#9215ac', '#861ec9', '#7a17e6', '#7010f9',
+                        '#691af3', '#6225ed', '#5b30e7', '#533be1', '#4c46db',
+                        '#4551d5', '#3e5ccf', '#3667c9', '#2f72c3', '#277dbd',
+                        '#1f88b7', '#1693b1', '#0a9eaa', '#03c69b', '#00f194'
+                    ],
+                    data: adCounts.map((count, index) => ({
+                        y: count,
+                        name: regionNames[index]
+                    })),
+                    dataLabels: {
+                        enabled: true,
+                        rotation: -90,
+                        color: '#ffffff',
+                        inside: true,
+                        verticalAlign: 'top',
+                        format: '{point.y}',
+                        y: 10,
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Vazir, IRANSans, Tahoma, sans-serif'
+                        }
+                    }
+                }],
+                credits: {
+                    enabled: false
+                },
+                lang: {
+                    noData: "داده‌ای برای نمایش وجود ندارد"
+                },
+                plotOptions: {
+                    column: {
+
+                        borderWidth: 0.02,
+                        groupPadding: 0.05
+                    }
+                }
+            });
+
+
+        } catch (err) {
+            console.error(err);
+            alert("خطا در دریافت داده‌ها");
+        }
+    }
+
+    window.onload = fetchData;
+</script>
+
+</body>
 </html>
