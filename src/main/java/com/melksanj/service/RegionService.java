@@ -28,13 +28,13 @@ public class RegionService {
                 year
         );
 
-//        List<Object[]> rows = new ArrayList<>();
-//        rows.add(new Object[]{1, year - 1, 100.0});
-//        rows.add(new Object[]{1, year, 120.0});
-//        rows.add(new Object[]{2, year - 1, 200.0});
-//        rows.add(new Object[]{2, year, 210.0});
-//        rows.add(new Object[]{3, year - 1, 150.0});
-//        rows.add(new Object[]{3, year, 150.0});
+   /*     List<Object[]> rows = new ArrayList<>();
+        rows.add(new Object[]{1, year - 1, 100.0});
+        rows.add(new Object[]{1, year, 120.0});
+        rows.add(new Object[]{2, year - 1, 200.0});
+        rows.add(new Object[]{2, year, 210.0});
+        rows.add(new Object[]{3, year - 1, 150.0});
+        rows.add(new Object[]{3, year, 150.0});*/
 
         Map<Integer, Map<Integer, Double>> pricesByYearAndRegion = new HashMap<>();
 

@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>نقشه حرارتی منطقه‌ای تهران با رنگ‌های متنوع</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <link
             rel="stylesheet"
             href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
             crossorigin=""
     />
-
     <style>
         body {
             font-family: "Vazir", "IRANSans", "Tahoma", sans-serif;
         }
+
         #map {
             height: 600px;
             border-radius: 0.5rem;
@@ -38,6 +37,39 @@
 
 <main class="flex-grow px-4 py-10 max-w-6xl mx-auto w-full">
     <h2 class="text-2xl font-bold text-gray-800 mb-6">نقشه حرارتی منطقه‌ای تهران</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+        <div class="flex flex-nowrap gap-6 flex-wrap">
+            <!-- شهر -->
+            <div class="w-1/4 min-w-[150px]">
+                <label class="block text-sm mb-1">شهر</label>
+                <select id="citySelect" class="w-full p-2 border rounded"></select>
+            </div>
+
+            <!-- نوع کاربری ملک -->
+            <div class="w-1/4 min-w-[150px]">
+                <label class="block text-sm mb-1">نوع کاربری ملک</label>
+                <select id="groupSelect" class="w-full p-2 border rounded"></select>
+            </div>
+
+            <!-- نوع ملک -->
+            <div class="w-1/4 min-w-[150px]">
+                <label class="block text-sm mb-1">نوع ملک</label>
+                <select id="categorySelect" class="w-full p-2 border rounded"></select>
+            </div>
+
+            <!-- سال -->
+            <div class="w-1/4 min-w-[150px]">
+                <label class="block text-sm mb-1">سال (اجباری)</label>
+                <select id="yearSelect" class="w-full p-2 border rounded" required></select>
+            </div>
+
+            <!-- دکمه -->
+            <button onclick="loadMapWithFilters()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mb-6">
+                نمایش نقشه
+            </button>
+        </div>
+    </div>
 
     <div id="map"></div>
 </main>
@@ -46,85 +78,165 @@
     داده‌های این سامانه بر اساس آگهی‌های منتشرشده در دیوار گردآوری شده‌اند.
 </footer>
 
-<script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        crossorigin=""
-></script>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
-    // مرکز و زوم نقشه روی تهران
     const map = L.map('map').setView([35.72, 51.40], 11);
 
-    // لایه زمینه (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // تابع رنگ‌دهی با گرادیان از سبز (کم) تا قرمز (زیاد)
     function getColor(value) {
-        return value > 14 ? '#d73027' :  // قرمز تیره
+        return value > 14 ? '#d73027' :
             value > 12 ? '#fc8d59' :
                 value > 10 ? '#fee08b' :
                     value > 7 ? '#d9ef8b' :
                         value > 4 ? '#91cf60' :
-                            '#1a9850';  // سبز تیره
+                            '#1a9850';
     }
 
-    // آدرس API بک‌اند که داده رشد قیمت رو میده
-    const apiUrl = 'http://localhost:8080/api/melksanj/region/growth/yearly?cityId=1&year=1402';
+    function normalizeRegionName(name) {
+        if (!name) return "نامشخص";
+        name = name.replace("شهر تهران", "").trim();
+        const persianNums = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        name = name.replace(/[۰-۹]/g, d => persianNums.indexOf(d).toString());
+        return name.trim();
+    }
 
-    fetch(apiUrl)
-        .then(res => res.json())
-        .then(data => {
-            const lastYearKey = Object.keys(data)[0];
-            const growthData = data[lastYearKey];
+    async function loadFilters() {
+        try {
+            const [years, cities, groups, categories] = await Promise.all([
+                fetch('http://localhost:8080/api/melksanj/base/years').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/base/cities').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/base/groups').then(r => r.json()),
+                fetch('http://localhost:8080/api/melksanj/base/categories').then(r => r.json()),
+            ]);
 
-            console.log('Received growth data:', growthData);
+            fillSelect(document.getElementById("yearSelect"), years, "miladi", "shamsi");
+            const tehranOnly = cities.find(city => city.nameFa === 'تهران');
+            fillSelect(document.getElementById("citySelect"), [tehranOnly], "id", "nameFa", false, tehranOnly.id);
+            fillSelect(document.getElementById("groupSelect"), groups, "code", "title");
+            fillSelect(document.getElementById("categorySelect"), categories, "code", "title");
 
-            const growthValues = growthData;
+            /* const yearSelect = document.getElementById("yearSelect");
+             years.forEach(y => {
+                 const opt = document.createElement("option");
+                 opt.value = y;
+                 opt.textContent = y;
+                 yearSelect.appendChild(opt);
+             });
 
-            fetch('http://localhost:8080/tehran-areas-22-polygon.geojson')
-                .then(res => res.json())
-                .then(geojson => {
+             const citySelect = document.getElementById("citySelect");
+             cities.forEach(city => {
+                 const opt = document.createElement("option");
+                 opt.value = city.id;
+                 opt.textContent = city.nameFa;
+                 citySelect.appendChild(opt);
+             });
 
-                    function style(feature) {
-                        const regionName = feature.properties.name || feature.properties.Name || "نامشخص";
-                        let growthStr = growthValues[regionName];
+             const groupSelect = document.getElementById("groupSelect");
+             groups.forEach(group => {
+                 const opt = document.createElement("option");
+                 opt.value = group.code;
+                 opt.textContent = group.title;
+                 groupSelect.appendChild(opt);
+             });
 
-                        if (growthStr === undefined) {
-                            console.warn(`Growth data missing for region: ${regionName}`);
-                            growthStr = "0%";
+             const categorySelect = document.getElementById("categorySelect");
+             categories.forEach(cat => {
+                 const opt = document.createElement("option");
+                 opt.value = cat.code;
+                 opt.textContent = cat.title;
+                 categorySelect.appendChild(opt);
+             });
+ */
+        } catch (e) {
+            alert("خطا در بارگذاری فیلترها: " + e.message);
+            console.error(e);
+        }
+    }
+
+
+    function fillSelect(select, data, valueKey, textKey) {
+        select.innerHTML = "";
+        data.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item[valueKey];
+            opt.textContent = item[textKey];
+            select.appendChild(opt);
+        });
+    }
+
+    async function loadMapWithFilters() {
+        const year = document.getElementById("yearSelect").value;
+        const cityId = document.getElementById("citySelect").value;
+        const groupCode = document.getElementById("groupSelect").value;
+        const categoryCode = document.getElementById("categorySelect").value;
+
+        if (!year) {
+            alert("لطفا سال را انتخاب کنید");
+            return;
+        }
+
+        let url = `http://localhost:8080/api/melksanj/region/growth/yearly?cityId=${cityId}&year=${year}`;
+        if (groupCode) url += `&groupCode=${groupCode}`;
+        if (categoryCode) url += `&categoryCode=${categoryCode}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const yearKey = Object.keys(data)[0];
+                const growthData = data[yearKey];
+
+                fetch('http://localhost:8080/tehran-areas-22-polygon.geojson')
+                    .then(res => res.json())
+                    .then(geojson => {
+                        if (window.regionLayer) {
+                            map.removeLayer(window.regionLayer);
                         }
 
-                        const value = parseFloat(growthStr.replace('%', '').trim()) || 0;
+                        function style(feature) {
+                            const rawName = feature.properties.name || feature.properties.Name || "نامشخص";
+                            const regionName = normalizeRegionName(rawName);
+                            let growthStr = growthData[regionName];
 
-                        return {
-                            fillColor: getColor(value),
-                            weight: 2,
-                            opacity: 1,
-                            color: 'white',
-                            dashArray: '3',
-                            fillOpacity: value > 0 ? 0.8 : 0.3
-                        };
-                    }
+                            if (growthStr === undefined) {
+                                growthStr = "0%";
+                            }
 
-                    function onEachFeature(feature, layer) {
-                        const regionName = feature.properties.name || feature.properties.Name || "نامشخص";
-                        const growthStr = growthValues[regionName] || "0%";
-                        layer.bindPopup(`<b>${regionName}</b><br>رشد قیمت: ${growthStr}`);
-                    }
+                            const value = parseFloat(growthStr.replace('%', '').trim()) || 0;
 
-                    L.geoJSON(geojson, {
-                        style: style,
-                        onEachFeature: onEachFeature
-                    }).addTo(map);
-                });
-        })
-        .catch(e => {
-            alert('خطا در بارگذاری داده‌ها: ' + e.message);
-            console.error(e);
-        });
+                            return {
+                                fillColor: getColor(value),
+                                weight: 2,
+                                opacity: 1,
+                                color: 'white',
+                                dashArray: '3',
+                                fillOpacity: value > 0 ? 0.8 : 0.3
+                            };
+                        }
 
+                        function onEachFeature(feature, layer) {
+                            const rawName = feature.properties.name || feature.properties.Name || "نامشخص";
+                            const regionName = normalizeRegionName(rawName);
+                            const growthStr = growthData[regionName] || "0%";
+                            layer.bindPopup(`<b>${regionName}</b><br>رشد قیمت: ${growthStr}`);
+                        }
+
+                        window.regionLayer = L.geoJSON(geojson, {
+                            style: style,
+                            onEachFeature: onEachFeature
+                        }).addTo(map);
+                    });
+            })
+            .catch(e => {
+                alert('خطا در بارگذاری داده‌ها: ' + e.message);
+                console.error(e);
+            });
+    }
+
+    // اجرای اولیه بعد از بارگذاری صفحه
+    window.addEventListener("DOMContentLoaded", loadFilters);
 </script>
 
 
