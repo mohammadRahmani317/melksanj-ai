@@ -61,6 +61,14 @@ public class BaseController {
         return melksanjService.findDistinctYears();
     }
 
+    /**
+     * Retrieves a list of regions (districts) for a given city ID.
+     * This endpoint is typically used to populate region dropdowns
+     * or filters in analytics dashboards or UI forms.
+     *
+     * @param cityId The ID of the city for which to fetch regions.
+     * @return A list of RegionDTOs representing regions in the specified city.
+     */
     @GetMapping("/regions")
     public List<RegionDTO> getRegionsByCity(@RequestParam Long cityId) {
         return melksanjService.getRegionsByCity(cityId);

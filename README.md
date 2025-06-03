@@ -1,92 +1,117 @@
+
 # 🏠 MelkSanj AI
 
-**MelkSanj AI** is an intelligent platform for analyzing and estimating real estate prices based on ads published on [Divar](https://divar.ir/).  
-This project uses Spring Boot and modern frontend tools to deliver a clean, interactive experience.
+اپلیکیشن MelkSanj AI  یک پلتفرم تحلیل داده‌های بازار مسکن ایران است که با الهام از [پست لینکدین دیوار](https://lnkd.in/dx_w4dup) و با استفاده از دیتاست منتشرشده‌ی آگهی‌های گمنام، طراحی شده است. هدف این پروژه کمک به تحلیل هوشمند آگهی‌های املاک برای توسعه‌دهندگان، پژوهشگران و استارتاپ‌هاست.
 
 ---
 
-## 📊 Features
+## 🎯 اهداف پروژه
 
-- 📈 Yearly price trend charts (avg. price per square meter)
-- 🎯 Filtering by city, property type, and category
-- 📂 Importing real estate ads from CSV files
-- 🤖 AI-powered price prediction (under development)
-- 🖥️ Clean and responsive UI with Chart.js & Tailwind CSS
+- تحلیل قیمت‌ها و روند بازار ملک به صورت سالانه و ماهانه
+- مقایسه منطقه‌ای قیمت‌ها و رشد آن‌ها در شهرهای مختلف
+- فراهم‌کردن داشبورد تعاملی برای تحلیل آماری آگهی‌ها
+- ایجاد زیرساخت برای فاز دوم پروژه: افزودن مدل‌های هوش مصنوعی برای تخمین قیمت، پردازش زبان طبیعی (NLP)، و سیستم پیشنهادگر ملک
 
 ---
 
-## 🚀 Getting Started
+## 🧱 ساختار پروژه
 
-### Prerequisites
+### 🔹 بخش اول: داشبوردهای تحلیلی (آماری)
+
+#### 📊 تب "قیمت"
+1. نمودار قیمت فروش سالانه
+2. نمودار قیمت فروش ماهانه
+3. نمودار قیمت هر متر مربع سالانه
+4. نمودار قیمت هر متر مربع ماهانه
+5. نمودار رهن و اجاره سالانه
+6. نمودار رهن و اجاره ماهانه
+
+> همه‌ی نمودارها قابلیت فیلتر دارند: شهر، منطقه، نوع کاربری ملک، نوع ملک
+
+#### 🗺 تب "منطقه‌ای"
+1. نمودار رشد سالانه قیمت در مناطق مختلف شهر
+2. نمودار توزیع تعداد آگهی در مناطق
+3. نقشه حرارتی قیمت و رشد منطقه‌ای (با استفاده از GeoJSON)
+
+---
+
+## 🚀 تکنولوژی‌های استفاده‌شده
+
+| بخش | تکنولوژی |
+|------|-----------|
+| Backend | Java 17, Spring Boot |
+| Database | PostgreSQL (در production)، H2 (در توسعه) |
+| Frontend | HTML, CSS, JavaScript, Highcharts |
+| Data Import | Apache Commons CSV |
+| Persian Calendar | تبدیل تاریخ میلادی به شمسی برای نمودارها |
+| نقشه | GeoJSON, Leaflet.js (نقشه حرارتی تهران) |
+
+---
+
+## 📁 ساختار فایل‌ها
+
+| مسیر | توضیح |
+|------|--------|
+| `src/main/resources/static/` | شامل HTML و فایل‌های رابط کاربری |
+| `api/...` | کنترلرهای REST برای نمودارها و فیلترها |
+| `/data/import` | API برای بارگذاری فایل CSV |
+| `/sale/...`, `/rent/...`, `/growth/...` | APIهای آماری |
+| `/cities`, `/regions`, `/years`, `/groups`, `/categories` | APIهای کمکی فیلترسازی |
+
+---
+
+## ⚙️ نحوه اجرا
+
+### پیش‌نیازها
 
 - Java 17+
 - Maven
-- (Optional) PostgreSQL or H2 for database
+- PostgreSQL
 
-### Run the application
+### مراحل اجرا
 
 ```bash
-./mvnw spring-boot:run
+mvn clean compile
+mvn spring-boot:run
 ```
 
-Then open your browser and navigate to:
-
-```
-http://localhost:8080
-```
+- فایل CSV را در مسیر `src/main/resources/` قرار دهید.
+- سپس از طریق API `/data/import` داده‌ها را وارد کنید.
 
 ---
 
-## 🔌 REST API Endpoints
+## 🧠 فاز دوم: هوش مصنوعی (در دست توسعه)
 
-| Method | Endpoint                                  | Description                            |
-|--------|-------------------------------------------|----------------------------------------|
-| POST   | `/api/melksanj/data/import`              | Import real estate ads from CSV        |
-| GET    | `/api/melksanj/price/sale/yearly`        | Yearly average prices (by filters)     |
-| GET    | `/api/melksanj/price/sale/monthly`       | Monthly avg. prices for selected year  |
-| GET    | `/api/melksanj/meta/cities`              | List of available cities               |
-| GET    | `/api/melksanj/meta/groups`              | List of property groups                |
-| GET    | `/api/melksanj/meta/categories`          | List of property categories            |
-| GET    | `/api/melksanj/meta/years`               | Available years based on data          |
+در مرحله بعدی، این قابلیت‌ها اضافه خواهند شد:
+
+- **مدل تخمین قیمت ملک** با استفاده از داده‌های ساختار یافته
+- **پردازش توضیحات آگهی با NLP فارسی** برای استخراج کلیدواژه‌ها و تحلیل متن
+- **سیستم توصیه‌گر ملک** بر اساس شباهت آگهی‌ها
+- **کشف الگوهای پنهان و خوشه‌بندی آگهی‌ها**
 
 ---
 
-## 🧰 Tech Stack
+## 📸 اسکرین‌شات‌ها
+![home-screen.png](home-screen.png)
+![chart-screen.png](chart-screen.png)
+---
 
-- **Backend:** Spring Boot (Java 17)
-- **Frontend:** HTML + Tailwind CSS + Chart.js
-- **Data Processing:** Apache Commons CSV
-- **Date Handling:** Persian Date library
-- **Database:** PostgreSQL / H2 (switchable)
+## 📌 الهام‌بخش پروژه
+
+> "ما یک میلیون آگهی املاک گمنام شده رو روی هاگینگ‌فیس منتشر کردیم تا همه بتونن آزادانه ازش استفاده کنن... ما معتقدیم مسیر پیشرفت هوش مصنوعی بومی از همکاری و اشتراک دانش می‌گذره."  
+> — تیم دیوار
 
 ---
 
-## 📁 Project Structure (Simplified)
+## 👤 توسعه‌دهنده
 
-```
-src/main/java/com/melksanj
-├── service         # Business logic and data analysis
-├── web             # REST controllers
-├── model           # JPA entities and DTOs
-├── repository      # Spring Data JPA repositories
-
-src/main/resources/static
-├── index.html          # Landing page
-├── analytics.html      # Price charts
-├── predict.html        # AI price prediction (WIP)
-```
+**محمد رحمانی**  
+توسعه‌دهنده و کارشناس نرم‌افزار  
+- LinkedIn: [mohammad-rahmani-a6a0a010a](https://www.linkedin.com/in/mohammad-rahmani-a6a0a010a/)
+- GitHub: [melksanj-ai Repository](https://github.com/mohammadRahmani317/melksanj-ai)
 
 ---
 
-## 📈 Planned Features
+## 📬 تماس و همکاری
 
-- Price prediction using ML models (regression & transformer-based)
-- Comparative charts between multiple cities
-- Admin dashboard for managing and monitoring listings
-
----
-
-## 👨‍💻 Author
-
-Developed by **Mohammad Rahmani** – 2025 ©  
-Feel free to contribute or fork!
+برای همکاری، توسعه بیشتر پروژه، یا پیشنهادات به لینکدین من پیام بده یا issue جدید باز کن. هر نوع بازخوردی استقبال می‌شه 🙏
