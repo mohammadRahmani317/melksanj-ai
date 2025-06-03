@@ -2,18 +2,17 @@ spring:
   application:
     name: melksanj-ai
   datasource:
-    url: jdbc:h2:mem:realestate;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-    jpa:
-      database-platform: org.hibernate.dialect.H2Dialect
-      hibernate:
-        ddl-auto: update
-      show-sql: true
-      properties:
-        hibernate:
-          format_sql: true
+    url: jdbc:postgresql://switchyard.proxy.rlwy.net:28893/railway
+    username: postgres
+    password: BrgmUziKvYVUrlawBgVjZCtATwdhPDAe
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  sql:
+    init:
+      mode: always
   h2:
     console:
       enabled: true
